@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Route;
 // });
 
 Route::post('register', [AuthController::class, 'register']);
-Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
+Route::group(['middleware' => 'auth:api', 'prefix' => 'auth'], function ($router) {
     Route::post('login', [AuthController::class, 'login']);
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('refresh', [AuthController::class, 'refresh']);
@@ -30,7 +30,7 @@ Route::group(['middleware' => 'api', 'prefix' => 'auth'], function ($router) {
 });
 
 Route::post("/auth/login/validate", [WebAuthController::class, "validateLogin"]);
-Route::prefix("admin")->namespace("admin")->middleware("auth:web")->group(function() {
+Route::prefix("admin")->namespace("admin")->middleware("auth:api")->group(function() {
     Route::post("/custom_template/create_update", [CustomTemplateController::class, "saveUpdateData"]);
 
 });

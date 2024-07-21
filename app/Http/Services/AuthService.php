@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthService
 {
-    public function register($data)
+    public function register($request)
     {
         try {
             $rules = [
@@ -28,7 +28,7 @@ class AuthService
                 "passwordConfirm.same" => "Password Confirm tidak sesuai"
             ];
 
-            $validator = Validator::make($data, $rules, $messages);
+            $validator = Validator::make($request->all(), $rules, $messages);
             if ($validator->fails()) {
                 return response()->json([
                     "status" => "error",
@@ -37,9 +37,9 @@ class AuthService
             }
 
             $user = new User();
-            $user->name = $data->name;
-            $user->username = $data->username;
-            $user->password = Hash::make($data->password);
+            $user->name = $request->name;
+            $user->username = $request->username;
+            $user->password = Hash::make($request->password);
             $user->role = "operator_gedung";
             $user->is_active = "Y";
             $user->save();

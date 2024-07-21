@@ -43,18 +43,10 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
 
-            // \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-            // \App\Http\Middleware\EncryptCookies::class,
-            // \Illuminate\Session\Middleware\StartSession::class
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \App\Http\Middleware\EncryptCookies::class,
+            \Illuminate\Session\Middleware\StartSession::class
         ],
-
-        // 'web-api' => [
-        //     \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
-        //     \Illuminate\Routing\Middleware\SubstituteBindings::class,
-        //     \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-        //     \App\Http\Middleware\EncryptCookies::class,
-        //     \Illuminate\Session\Middleware\StartSession::class,
-        // ]
     ];
 
     /**

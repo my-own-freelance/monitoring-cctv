@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('custom_templates', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('name');
-            $table->string('username')->unique();
-            $table->string('password');
-            $table->enum('role', ["superadmin", "operator", "operator_gedung"]);
-            $table->enum('is_active',['Y','N'])->default('Y');
-            $table->rememberToken();
+            $table->string('logo_header')->nullable();
+            $table->string('topbar_color')->nullable();
+            $table->string('sidebar_color')->nullable();
+            $table->string('bg_color')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -29,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('custom_templates');
     }
 };

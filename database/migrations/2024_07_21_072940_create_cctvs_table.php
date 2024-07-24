@@ -17,6 +17,16 @@ return new class extends Migration
             $table->string("cctv_url");
             $table->longText('description')->nullable();
             $table->string("image")->nullable();
+            $table->unsignedBigInteger("building_id");
+            $table->unsignedBigInteger("floor_id");
+            $table->foreign("building_id")
+                ->references("id")
+                ->on("buildings")
+                ->onUpdate("cascade");
+            $table->foreign("floor_id")
+                ->references("id")
+                ->on("floors")
+                ->onUpdate("cascade");
             $table->timestamps();
             $table->softDeletes();
         });

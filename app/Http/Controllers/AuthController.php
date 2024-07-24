@@ -19,7 +19,7 @@ class AuthController extends Controller
      */
     public function __construct(AuthService $authService)
     {
-        $this->middleware('auth:web', ['except' => ['login', 'register']]);
+        $this->middleware('auth:api', ['except' => ['login', 'register']]);
         $this->authService = $authService;
     }
 
@@ -55,7 +55,7 @@ class AuthController extends Controller
 
         $credentials = request(['username', 'password']);
 
-        if (!$token = auth()->attempt($credentials)) {
+        if (!$token = auth()->guard("api")->attempt($credentials)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
@@ -106,7 +106,7 @@ class AuthController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60
+            'expires_in' => auth('api')->factory()->getTTL() * 60
         ]);
     }
 }

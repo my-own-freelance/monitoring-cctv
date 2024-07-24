@@ -18,6 +18,12 @@
                     </span>
                     <h4 class="text-section">Master</h4>
                 </li>
+                <li class="nav-item ml-3 {{ $routename == 'building' ? 'active' : '' }}">
+                    <a href="{{ route('building') }}">
+                        <i class="fas fa-building"></i>
+                        <p>Gedung</p>
+                    </a>
+                </li>
 
             </ul>
         </div>

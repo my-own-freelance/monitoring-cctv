@@ -11,6 +11,6 @@ class DashboardController extends Controller
     {
         $user = json_decode(Cookie::get("user"));
         $title = $user->username;
-        return view("pages.dashboard.index", compact("title"));
+        return view("pages.admin.index", compact("title"));
     }
 }

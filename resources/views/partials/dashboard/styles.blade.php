@@ -24,7 +24,7 @@
             "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands",
                 "simple-line-icons"
             ],
-            urls: ['{{ asset("css/fonts.min.css") }}']
+            urls: ['{{ asset("dashboard/css/fonts.min.css") }}']
         },
         active: function() {
             sessionStorage.fonts = true;

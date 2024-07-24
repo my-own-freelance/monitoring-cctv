@@ -17,7 +17,8 @@ return new class extends Migration
             $table->string('username')->unique();
             $table->string('password');
             $table->enum('role', ["superadmin", "operator", "operator_gedung"]);
-            $table->enum('is_active',['Y','N'])->default('Y');
+            $table->enum('is_active', ['Y', 'N'])->default('Y');
+            $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

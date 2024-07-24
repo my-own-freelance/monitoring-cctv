@@ -42,6 +42,7 @@ class AuthService
 
             $user = new User();
             $user->name = $request->name;
+            $user->email = $request->email;
             $user->username = $request->username;
             $user->password = Hash::make($request->password);
             $user->role = "operator_gedung";
@@ -65,18 +66,16 @@ class AuthService
         try {
             $data = $request->all();
             $rules = [
-                "id" => "required|integer",
                 "name" => "required|string",
                 "email" => "required|string|email",
                 "password" => "nullable",
             ];
 
-            if ($data["password"]) {
-                $rules["password"] .= "|string|min:5";
+            if (isset($data["password"]) && $data["password"] != "") {
+                $rules['password'] .= "|string|min:5";
             }
+
             $messages = [
-                "id.required" => "Data ID harus diisi",
-                "id.integer" => "Type ID tidak sesuai",
                 "name.required" => "Nama harus diisi",
                 "email.required" => "Email harus diisi",
                 "email.email" => "Email tidak valid",
@@ -91,7 +90,8 @@ class AuthService
                 ], 400);
             }
 
-            $user = User::find($data["id"]);
+            $userAuth = Auth()->user();
+            $user = User::where("username", $userAuth->username)->first();
             if (!$user) {
                 return response()->json([
                     "status" => "error",
@@ -99,7 +99,7 @@ class AuthService
                 ], 404);
             }
 
-            if ($data["password"]) {
+            if (isset($data["password"]) && $data["password"] != "") {
                 $data["password"] = Hash::make($data["password"]);
             } else {
                 unset($data["password"]);

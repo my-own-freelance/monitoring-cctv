@@ -96,6 +96,8 @@ class BuildingService
                 ], 404);
             }
 
+            $building["image_mobile"] = url("/") . Storage::url($building->image);
+
             return response()->json([
                 "status" => "success",
                 "data" => $building
@@ -119,7 +121,7 @@ class BuildingService
             ];
 
             $messages = [
-                "name.required" => "Judul harus diisi",
+                "name.required" => "Nama Gedung harus diisi",
                 "description.required" => "Deskripsi harus diisi",
                 "image.required" => "Gambar harus di isi",
                 "image.image" => "Gambar yang di upload tidak valid",
@@ -173,7 +175,7 @@ class BuildingService
             $messages = [
                 "id.required" => "Data ID harus diisi",
                 "id.integer" => "Type ID tidak sesuai",
-                "name.required" => "Judul harus diisi",
+                "name.required" => "Nama Gedung harus diisi",
                 "description.required" => "Deskripsi harus diisi",
                 "image.image" => "Gambar yang di upload tidak valid",
                 "image.max" => "Ukuran gambar maximal 1MB",

@@ -107,6 +107,8 @@ class FloorService
                 ], 404);
             }
 
+            $floor["image_mobile"] = url("/") . Storage::url($floor->image);
+
             return response()->json([
                 "status" => "success",
                 "data" => $floor
@@ -131,7 +133,7 @@ class FloorService
             ];
 
             $messages = [
-                "name.required" => "Judul harus diisi",
+                "name.required" => "Nama Lantai harus diisi",
                 "description.required" => "Deskripsi harus diisi",
                 "image.required" => "Gambar harus di isi",
                 "image.image" => "Gambar yang di upload tidak valid",
@@ -197,7 +199,7 @@ class FloorService
             $messages = [
                 "id.required" => "Data ID harus diisi",
                 "id.integer" => "Type ID tidak sesuai",
-                "name.required" => "Judul harus diisi",
+                "name.required" => "Nam Lantai harus diisi",
                 "description.required" => "Deskripsi harus diisi",
                 "image.image" => "Gambar yang di upload tidak valid",
                 "image.max" => "Ukuran gambar maximal 1MB",

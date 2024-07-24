@@ -19,8 +19,8 @@ class CheckRole
         if (!Auth::check()) {
             return response()->json([
                 "status" => "error",
-                "message" => "Anda tidak memiliki akses"
-            ], 401);
+                "message" => "Anda belum ter-Authentikasi"
+            ], 40);
         }
 
         $user = Auth::user();
@@ -28,7 +28,7 @@ class CheckRole
             return response()->json([
                 "status" => "error",
                 "message" => "Anda tidak memiliki akses"
-            ], 401);
+            ], 403);
         }
 
         return $next($request);

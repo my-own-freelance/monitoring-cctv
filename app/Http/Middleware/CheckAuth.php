@@ -20,7 +20,7 @@ class CheckAuth
         if (!Auth::check()) {
             return response()->json([
                 "status" => "error",
-                "message" => "Anda tidak memiliki akses"
+                "message" => "Anda belum ter-Authentikasi"
             ], 401);
         }
 

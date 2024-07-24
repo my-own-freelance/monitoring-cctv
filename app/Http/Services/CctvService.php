@@ -127,6 +127,8 @@ class CctvService
                 ], 404);
             }
 
+            $cctv["image_mobile"] = url("/") . Storage::url($cctv->image);
+
             return response()->json([
                 "status" => "success",
                 "data" => $cctv
@@ -153,7 +155,7 @@ class CctvService
             ];
 
             $messages = [
-                "name.required" => "Judul harus diisi",
+                "name.required" => "Nama CCTV harus diisi",
                 "url.required" => "Url CCTV harus diisi",
                 "description.required" => "Deskripsi harus diisi",
                 "image.required" => "Gambar harus di isi",
@@ -234,7 +236,7 @@ class CctvService
             $messages = [
                 "id.required" => "Data ID harus diisi",
                 "id.integer" => "Type ID tidak sesuai",
-                "name.required" => "Judul harus diisi",
+                "name.required" => "Nama CCTV harus diisi",
                 "description.required" => "Deskripsi harus diisi",
                 "image.image" => "Gambar yang di upload tidak valid",
                 "image.max" => "Ukuran gambar maximal 1MB",

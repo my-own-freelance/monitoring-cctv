@@ -163,7 +163,7 @@ class UserService
             $rules = [
                 "name" => "required|string",
                 "username" => "required|string|unique:users",
-                "username" => "required|string|email|unique:users",
+                "email" => "required|string|email|unique:users",
                 "password" => "required|string|min:5",
                 "role" => "required|string|in:superadmin,operator,operator_gedung",
                 "is_active" => "required|string|in:Y,N",
@@ -212,6 +212,7 @@ class UserService
 
             $user = new User();
             $user->name = $request->name;
+            $user->email = $request->email;
             $user->username = $request->username;
             $user->password = Hash::make($request->password);
             $user->role = $request->role;
@@ -251,7 +252,7 @@ class UserService
                 "role" => "required|string|in:superadmin,operator,operator_gedung",
                 "is_active" => "required|string|in:Y,N",
             ];
-            if ($data['password'] != "") {
+            if ($data && $data['password'] != "") {
                 $rules['password'] .= "|string|min:5";
             }
 

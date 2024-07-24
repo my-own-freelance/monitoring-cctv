@@ -17,7 +17,7 @@
                     @if ($user->role != 'operator_gedung')
                         <form class="navbar-left navbar-form mr-md-1 mt-3" id="formFilter">
                             <div class="row">
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                         <label for="fBuilding">Filter Gedung</label>
                                         <select class="form-control" id="fBuilding" name="fBuilding">

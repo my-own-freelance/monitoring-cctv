@@ -33,4 +33,5 @@ Route::group(['middleware' => 'auth:web', 'prefix' => 'admin'], function () {
     Route::get("/floor", [WebFloorController::class, "index"])->name("floor");
     Route::get("/cctv", [WebCctvController::class, "index"])->name("cctv");
     Route::get("/user", [WebUserController::class, "index"])->name("user");
+    Route::get('/account', [WebAuthController::class, 'account'])->name('account');
 });

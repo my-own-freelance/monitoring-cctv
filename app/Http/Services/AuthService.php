@@ -14,6 +14,7 @@ class AuthService
             $rules = [
                 "name" => "required|string",
                 "username" => "required|string|unique:users",
+                "email" => "required|string|email|unique:users",
                 "password" => "required|string|min:5",
                 "passwordConfirm" => "required|string|same:password"
             ];
@@ -22,6 +23,9 @@ class AuthService
                 "name.required" => "Nama harus diisi",
                 "username.required" => "Username harus diisi",
                 "username.unique" => "Username sudah digunakan",
+                "email.required" => "Email harus diisi",
+                "email.unique" => "Email sudah digunakan",
+                "email.email" => "Email tidak valid",
                 "password.required" => "Password harus diisi",
                 "password.min" => "Password minimal 5 karakter",
                 "passwordConfirm.required" => "Password harus diisi",
@@ -52,6 +56,99 @@ class AuthService
             return response()->json([
                 "status" => "error",
                 "message" => $err->getMessage()
+            ], 500);
+        }
+    }
+
+    public function update($request)
+    {
+        try {
+            $data = $request->all();
+            $rules = [
+                "id" => "required|integer",
+                "name" => "required|string",
+                "email" => "required|string|email",
+                "password" => "nullable",
+            ];
+
+            if ($data["password"]) {
+                $rules["password"] .= "|string|min:5";
+            }
+            $messages = [
+                "id.required" => "Data ID harus diisi",
+                "id.integer" => "Type ID tidak sesuai",
+                "name.required" => "Nama harus diisi",
+                "email.required" => "Email harus diisi",
+                "email.email" => "Email tidak valid",
+                "password.min" => "Password minimal 5 karakter",
+            ];
+
+            $validator = Validator::make($data, $rules, $messages);
+            if ($validator->fails()) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => $validator->errors()->first(),
+                ], 400);
+            }
+
+            $user = User::find($data["id"]);
+            if (!$user) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "Data user tidak ditemukan"
+                ], 404);
+            }
+
+            if ($data["password"]) {
+                $data["password"] = Hash::make($data["password"]);
+            } else {
+                unset($data["password"]);
+            }
+
+            // jika email di update
+            $existingEmail = User::where("email", $data['email'])->where('id', '!=', $user->id)->first();
+            if ($existingEmail) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "Email sudah digunakan"
+                ], 404);
+            }
+
+            $user->update($data);
+
+            return response()->json([
+                "status" => "success",
+                "message" => "Update berhasil"
+            ]);
+        } catch (\Exception $err) {
+            return response()->json([
+                "status" => "error",
+                "message" => $err->getMessage()
+            ], 500);
+        }
+    }
+
+    public function detail()
+    {
+        try {
+            $user = Auth()->user();
+            $data = User::where("username", $user->username)->first();
+            if (!$user) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "Data user tidak ditemukan"
+                ], 404);
+            }
+
+            return response()->json([
+                "status" => "success",
+                "data" => $data
+            ]);
+        } catch (\Exception $err) {
+            return response()->json([
+                "status" => "error",
+                "message" => $err->getMessage(),
+                "user" => $user
             ], 500);
         }
     }

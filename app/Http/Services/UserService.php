@@ -14,7 +14,7 @@ class UserService
 {
     public function dataTable($request)
     {
-        $query = User::select("id", "name", "username", "role", "is_active");
+        $query = User::select("id", "name", "username", "email", "role", "is_active");
 
         if ($request->query("search")) {
             $searchValue = $request->query("search")['value'];
@@ -50,14 +50,15 @@ class UserService
 
             // SUPERADMIN BISA LIHAT SEMUA DATA DAN KELOLA DATA
             $user = auth()->user();
-            if ($user->role == "superadmin" && $user->id != $item->id) {
+            if ($user->role == "superadmin") {
+                $action_delete = $user->id != $item->id ? "<a class='dropdown-item' onclick='return removeData(\"{$item->id}\");' href='javascript:void(0)' title='Hapus'>Hapus</a>" : "";
                 $action = "<div class='dropdown-primary dropdown open'>
                                 <button class='btn btn-sm btn-primary dropdown-toggle waves-effect waves-light' id='dropdown-{$item->id}' data-toggle='dropdown' aria-haspopup='true' aria-expanded='true'>
                                     Aksi
                                 </button>
                                 <div class='dropdown-menu' aria-labelledby='dropdown-{$item->id}' data-dropdown-out='fadeOut'>
                                     <a class='dropdown-item' onclick='return getData(\"{$item->id}\");' href='javascript:void(0);' title='Edit'>Edit</a>
-                                    <a class='dropdown-item' onclick='return removeData(\"{$item->id}\");' href='javascript:void(0)' title='Hapus'>Hapus</a>
+                                    " . $action_delete . "
                                 </div>
                             </div>";
             }
@@ -100,10 +101,18 @@ class UserService
                     </div>
                 </div>';
 
+            $account = '<small>
+                            <strong>Username</strong> : ' . $item->username . '
+                            <br>
+                            <strong>Email</strong> : ' . $item->email . '
+                            <br>
+                        </small>';
+
             $item['action'] = $action;
             $item['role'] = $role;
             $item['building_access'] = $building;
             $item['is_active'] = $is_active;
+            $item['account'] = $account;
 
             return $item;
         });
@@ -120,7 +129,7 @@ class UserService
     public function getDetail($id)
     {
         try {
-            $user = User::select("id", "name", "username", "role", "is_active")->find($id);
+            $user = User::select("id", "name", "username", "email", "role", "is_active")->find($id);
 
             if (!$user) {
                 return response()->json([
@@ -154,6 +163,7 @@ class UserService
             $rules = [
                 "name" => "required|string",
                 "username" => "required|string|unique:users",
+                "username" => "required|string|email|unique:users",
                 "password" => "required|string|min:5",
                 "role" => "required|string|in:superadmin,operator,operator_gedung",
                 "is_active" => "required|string|in:Y,N",
@@ -163,6 +173,9 @@ class UserService
                 "name.required" => "Nama harus diisi",
                 "username.required" => "Username harus diisi",
                 "username.unique" => "Username sudah digunakan",
+                "email.required" => "Email harus diisi",
+                "email.unique" => "Email sudah digunakan",
+                "email.email" => "Email tidak valid",
                 "password.required" => "Password harus diisi",
                 "password.min" => "Password minimal 5 karakter",
                 "role.required" => "Level harus diisi",
@@ -233,6 +246,7 @@ class UserService
             $rules = [
                 "id" => "required|integer",
                 "name" => "required|string",
+                "email" => "required|string|email",
                 "password" => "nullable",
                 "role" => "required|string|in:superadmin,operator,operator_gedung",
                 "is_active" => "required|string|in:Y,N",
@@ -245,6 +259,8 @@ class UserService
                 "id.required" => "Data ID harus diisi",
                 "id.integer" => "Type ID tidak sesuai",
                 "name.required" => "Nama harus diisi",
+                "email.required" => "Email harus diisi",
+                "email.email" => "Email tidak valid",
                 "password.min" => "Password minimal 5 karakter",
                 "role.required" => "Level harus diisi",
                 "role.in" => "Level tidak sesuai",
@@ -284,6 +300,15 @@ class UserService
             // agar username tidak bisa diganti
             if ($data['username']) {
                 unset($data['username']);
+            }
+
+            // jika email di update
+            $existingEmail = User::where("email", $data['email'])->where('id', '!=', $user->id)->first();
+            if ($existingEmail) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "Email sudah digunakan"
+                ], 404);
             }
 
             $building = null;

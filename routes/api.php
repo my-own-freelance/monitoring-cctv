@@ -98,6 +98,12 @@ Route::group(["middleware" => ["api", "auth:api"]], function () {
         Route::get("/datatable", [ApiUserController::class, "dataTable"]);
         Route::get("/{id}/detail", [ApiUserController::class, "getDetail"]);
     });
+
+    // ACCOUNT
+    Route::group(["prefix" => "account"], function () {
+        Route::get("/detail", [AuthController::class, "detail"]);
+        Route::post("/update", [AuthController::class, "update"]);
+    });
 });
 
 
@@ -165,5 +171,11 @@ Route::prefix("admin")->namespace("admin")->middleware(["check.auth"])->group(fu
         // akses operator & operator gedung
         Route::get("/datatable", [WebUserController::class, "dataTable"]);
         Route::get("/{id}/detail", [WebUserController::class, "getDetail"]);
+    });
+
+    // ACCOUNT
+    Route::group(["prefix" => "account"], function () {
+        Route::get("/detail", [WebAuthController::class, "detail"]);
+        Route::post("/update", [WebAuthController::class, "update"]);
     });
 });

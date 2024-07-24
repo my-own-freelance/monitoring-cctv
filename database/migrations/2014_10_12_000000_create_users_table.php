@@ -15,6 +15,7 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->string('name');
             $table->string('username')->unique();
+            $table->string('email')->unique();
             $table->string('password');
             $table->enum('role', ["superadmin", "operator", "operator_gedung"]);
             $table->enum('is_active', ['Y', 'N'])->default('Y');

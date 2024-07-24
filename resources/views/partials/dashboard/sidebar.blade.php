@@ -46,7 +46,7 @@
                     <h4 class="text-section">MANAGEMENT</h4>
                 </li>
                 <li class="nav-item ml-3">
-                    <a href="">
+                    <a href="{{ route('account') }}">
                         <i class="fas fa-user-cog"></i>
                         <p>Setting Account</p>
                     </a>

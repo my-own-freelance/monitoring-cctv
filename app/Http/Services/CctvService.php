@@ -98,7 +98,7 @@ class CctvService
                         <strong>Lantai</strong> : ' . $item->floor->name . '
                         <br>
                         <strong>Url CCTV </strong>: ' . $item->url . '
-                        </small>';
+                    </small>';
             $item['action'] = $action;
             $item['mobile_image'] = url("/") . Storage::url($item->image);
             $item['image'] = $image;

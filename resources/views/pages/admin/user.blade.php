@@ -56,7 +56,7 @@
                                 <tr>
                                     <th class="all">#</th>
                                     <th class="all">Nama Pengguna</th>
-                                    <th class="all">Username</th>
+                                    <th class="all">Akun</th>
                                     <th class="all">Level</th>
                                     <th class="all">Akses</th>
                                     <th class="all">Status</th>
@@ -98,6 +98,11 @@
                                 placeholder="masukkan username pengguna" required />
                         </div>
                         <div class="form-group">
+                            <label for="email">Email</label>
+                            <input class="form-control" id="email" type="email" name="email"
+                                placeholder="masukkan email pengguna" required />
+                        </div>
+                        <div class="form-group">
                             <label for="password">Password</label>
                             <input class="form-control" id="password" type="password" name="password"
                                 placeholder="masukkan password pengguna" />
@@ -122,7 +127,7 @@
                         </div>
                         <div class="form-group" id="divBuilding" style="display: none">
                             <label for="building_id">Gedung</label>
-                            <select class="form-control form-control" id="building_id" name="building_id" required>
+                            <select class="form-control form-control" id="building_id" name="building_id">
                                 <option value="">Pilih Gedung</option>
                                 @foreach ($buildings as $building)
                                     <option value="<?= $building->id ?>"><?= $building->name ?></option>
@@ -172,7 +177,7 @@
                 }, {
                     data: "name"
                 }, {
-                    data: "username"
+                    data: "account"
                 }, {
                     data: "role"
                 }, {
@@ -205,7 +210,7 @@
             $("#username").removeAttr("readonly");
             $("#formEditable").attr('data-action', 'add').fadeIn(200);
             $("#boxTable").removeClass("col-md-12").addClass("col-md-8");
-            $("#title").focus();
+            $("#name").focus();
         }
 
         function closeForm() {
@@ -229,6 +234,7 @@
                         $("#name").val(d.name);
                         $("#username").val(d.username);
                         $("#username").attr("readonly", true);
+                        $("#email").val(d.email);
                         $("#password").val(d.password);
                         $("#role").val(d.role);
                         $("#is_active").val(d.is_active);
@@ -255,6 +261,7 @@
             formData.append("id", parseInt($("#id").val()));
             formData.append("name", $("#name").val());
             formData.append("username", $("#username").val());
+            formData.append("email", $("#email").val());
             formData.append("password", $("#password").val());
             formData.append("role", $("#role").val());
             formData.append("is_active", $("#is_active").val());

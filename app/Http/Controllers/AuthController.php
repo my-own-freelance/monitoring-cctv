@@ -28,6 +28,16 @@ class AuthController extends Controller
         return $this->authService->register($request);
     }
 
+    public function detail()
+    {
+        return $this->authService->detail();
+    }
+
+    public function update(Request $request)
+    {
+        return $this->authService->update($request);
+    }
+
     /**
      * Get a JWT via given credentials.
      *

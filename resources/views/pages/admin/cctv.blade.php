@@ -15,7 +15,7 @@
                             <button class="btn btn-mini btn-primary" onclick="return addData();">Tambah Data</button>
                         @endif
                     </div>
-                    @if ($user->role != 'operator_degung')
+                    @if ($user->role != 'operator_gedung')
                         <form class="navbar-left navbar-form mr-md-1 mt-3" id="formFilter">
                             <div class="row">
                                 <div class="col-md-2">

@@ -24,6 +24,14 @@ class FloorService
             });
         }
 
+        // filter building_id
+        if ($request->query("building_id") && $request->query('building_id') != "") {
+            $building_id = $request->query("building_id");
+            $query->where(function ($query) use ($building_id) {
+                $query->where('building_id', $building_id);
+            });
+        }
+
         // OPERATOR GEDUNG BISA LIHAT DATA SESUI GEDUNG DIA
         $user = auth()->user();
         if ($user->role == "operator_gedung") {
@@ -90,7 +98,7 @@ class FloorService
     public function getDetail($id)
     {
         try {
-            $floor = Floor::find($id);
+            $floor = Floor::with('building')->find($id);
 
             if (!$floor) {
                 return response()->json([

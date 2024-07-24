@@ -1,6 +1,7 @@
 <!-- Sidebar -->
 @php
     $routename = request()->route()->getName();
+    $user = Auth()->user();
 @endphp
 <div class="sidebar sidebar-style-2" data-background-color="{{ $sidebarColor }}">
     <div class="sidebar-wrapper scrollbar scrollbar-inner">
@@ -18,12 +19,14 @@
                     </span>
                     <h4 class="text-section">Master</h4>
                 </li>
-                <li class="nav-item ml-3 {{ $routename == 'building' ? 'active' : '' }}">
-                    <a href="{{ route('building') }}">
-                        <i class="fas fa-building"></i>
-                        <p>Gedung</p>
-                    </a>
-                </li>
+                @if ($user->role != 'operator_gedung')
+                    <li class="nav-item ml-3 {{ $routename == 'building' ? 'active' : '' }}">
+                        <a href="{{ route('building') }}">
+                            <i class="fas fa-building"></i>
+                            <p>Gedung</p>
+                        </a>
+                    </li>
+                @endif
                 <li class="nav-item ml-3 {{ $routename == 'floor' ? 'active' : '' }}">
                     <a href="{{ route('floor') }}">
                         <i class="fas fa-layer-group"></i>
@@ -36,7 +39,18 @@
                         <p>Cctv</p>
                     </a>
                 </li>
-
+                <li class="nav-section">
+                    <span class="sidebar-mini-icon">
+                        <i class="fa fa-ellipsis-h"></i>
+                    </span>
+                    <h4 class="text-section">Logout</h4>
+                </li>
+                <li class="nav-item ml-3">
+                    <a href="{{ route('logout') }}">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <p>Logout</p>
+                    </a>
+                </li>
             </ul>
         </div>
     </div>

@@ -14,6 +14,28 @@
                             <button class="btn btn-mini btn-primary" onclick="return addData();">Tambah Data</button>
                         @endif
                     </div>
+                    @if ($user->role != 'operator_gedung')
+                        <form class="navbar-left navbar-form mr-md-1 mt-3" id="formFilter">
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="fBuilding">Filter Gedung</label>
+                                        <select class="form-control" id="fBuilding" name="fBuilding">
+                                            <option value="">All</option>
+                                            @foreach ($buildings as $building)
+                                                <option value = "{{ $building->id }}">{{ $building->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="pt-3">
+                                        <button class="mt-4 btn btn-sm btn-success mr-3" type="submit">Submit</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    @endif
                 </div>
                 <div class="card-block">
                     <div class="table-responsive mt-3">
@@ -107,8 +129,10 @@
             dataTable();
         })
 
-        function dataTable() {
-            const url = "/api/admin/floor/datatable";
+        function dataTable(filter) {
+            let url = "/api/admin/floor/datatable";
+            if (filter) url += '?' + filter;
+
             dTable = $("#floorTable").DataTable({
                 searching: true,
                 orderng: true,
@@ -141,6 +165,19 @@
                 pageLength: 10,
             });
         }
+
+        $('#formFilter').submit(function(e) {
+            e.preventDefault()
+            let dataFilter = {
+                building_id: $("#fBuilding").val(),
+            }
+
+            dTable.clear();
+            dTable.destroy();
+            dataTable($.param(dataFilter))
+            return false
+        })
+
 
         function refreshData() {
             dTable.ajax.reload(null, false);

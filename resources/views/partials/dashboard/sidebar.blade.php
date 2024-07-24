@@ -43,6 +43,26 @@
                     <span class="sidebar-mini-icon">
                         <i class="fa fa-ellipsis-h"></i>
                     </span>
+                    <h4 class="text-section">MANAGEMENT</h4>
+                </li>
+                <li class="nav-item ml-3">
+                    <a href="">
+                        <i class="fas fa-user-cog"></i>
+                        <p>Setting Account</p>
+                    </a>
+                </li>
+                @if ($user->role != 'operator_gedung')
+                    <li class="nav-item ml-3 {{ $routename == 'user' ? 'active' : '' }}">
+                        <a href="{{ route('user') }}">
+                            <i class="fas fa-users-cog"></i>
+                            <p>Pengguna</p>
+                        </a>
+                    </li>
+                @endif
+                <li class="nav-section">
+                    <span class="sidebar-mini-icon">
+                        <i class="fa fa-ellipsis-h"></i>
+                    </span>
                     <h4 class="text-section">Logout</h4>
                 </li>
                 <li class="nav-item ml-3">

@@ -3,11 +3,13 @@
 use App\Http\Controllers\Api\ApiBuildingController;
 use App\Http\Controllers\Api\ApiCctvController;
 use App\Http\Controllers\Api\ApiFloorController;
+use App\Http\Controllers\Api\ApiUserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CustomTemplateController;
 use App\Http\Controllers\Web\WebBuildingController;
 use App\Http\Controllers\Web\WebCctvController;
 use App\Http\Controllers\Web\WebFloorController;
+use App\Http\Controllers\Web\WebUserController;
 use App\Http\Controllers\WebAuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -81,6 +83,21 @@ Route::group(["middleware" => ["api", "auth:api"]], function () {
         Route::get("datatable", [ApiCctvController::class, "dataTable"]);
         Route::get("{id}/detail", [ApiCctvController::class, "getDetail"]);
     });
+
+    // User
+    Route::group(["prefix" => "user"], function () {
+        // akses khusus superadmin
+        Route::middleware("check.role:superadmin")->group(function () {
+            Route::post("/create", [ApiUserController::class, "create"]);
+            Route::post("/update", [ApiUserController::class, "update"]);
+            Route::delete("/delete", [ApiUserController::class, "destroy"]);
+            Route::post("/update-status", [ApiUserController::class, "updateStatus"]);
+        });
+
+        // akses operator & operator gedung
+        Route::get("/datatable", [ApiUserController::class, "dataTable"]);
+        Route::get("/{id}/detail", [ApiUserController::class, "getDetail"]);
+    });
 });
 
 
@@ -132,5 +149,21 @@ Route::prefix("admin")->namespace("admin")->middleware(["check.auth"])->group(fu
         // akses operator & operator gedung
         Route::get("/datatable", [WebCctvController::class, "dataTable"]);
         Route::get("/{id}/detail", [WebCctvController::class, "getDetail"]);
+    });
+
+
+    // User
+    Route::prefix("user")->group(function () {
+        // akses khusus superadmin
+        Route::middleware("check.role:superadmin")->group(function () {
+            Route::post("/create", [WebUserController::class, "create"]);
+            Route::post("/update", [WebUserController::class, "update"]);
+            Route::delete("/delete", [WebUserController::class, "destroy"]);
+            Route::post("/update-status", [WebUserController::class, "updateStatus"]);
+        });
+
+        // akses operator & operator gedung
+        Route::get("/datatable", [WebUserController::class, "dataTable"]);
+        Route::get("/{id}/detail", [WebUserController::class, "getDetail"]);
     });
 });

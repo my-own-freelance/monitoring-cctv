@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\Api\ApiBuildingController;
+use App\Http\Controllers\Api\ApiFloorController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CustomTemplateController;
 use App\Http\Controllers\Web\WebBuildingController;
+use App\Http\Controllers\Web\WebFloorController;
 use App\Http\Controllers\WebAuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -48,6 +50,20 @@ Route::group(["middleware" => ["api", "auth:api"]], function () {
         Route::get("datatable", [ApiBuildingController::class, "dataTable"]);
         Route::get("{id}/detail", [ApiBuildingController::class, "getDetail"]);
     });
+
+    // Floor
+    Route::group(["prefix" => "floor"], function () {
+        // akses khusus superadmin
+        Route::middleware("check.role:superadmin")->group(function () {
+            Route::post("/create", [ApiFloorController::class, "create"]);
+            Route::post("/update", [ApiFloorController::class, "update"]);
+            Route::delete("/delete", [ApiFloorController::class, "destroy"]);
+        });
+
+        // akses operator & operator bangunan
+        Route::get("datatable", [ApiFloorController::class, "dataTable"]);
+        Route::get("{id}/detail", [ApiFloorController::class, "getDetail"]);
+    });
 });
 
 
@@ -58,6 +74,7 @@ Route::post("/auth/login/validate", [WebAuthController::class, "validateLogin"])
 Route::prefix("admin")->namespace("admin")->middleware(["check.auth"])->group(function () {
     Route::post("/custom_template/create_update", [CustomTemplateController::class, "saveUpdateData"]);
 
+    // Building
     Route::prefix("building")->group(function () {
         // akses khusus superadmin
         Route::middleware("check.role:superadmin")->group(function () {
@@ -69,5 +86,19 @@ Route::prefix("admin")->namespace("admin")->middleware(["check.auth"])->group(fu
         // akses operator & operator bangunan
         Route::get("/datatable", [WebBuildingController::class, "dataTable"]);
         Route::get("/{id}/detail", [WebBuildingController::class, "getDetail"]);
+    });
+
+    // Floor
+    Route::prefix("floor")->group(function () {
+        // akses khusus superadmin
+        Route::middleware("check.role:superadmin")->group(function () {
+            Route::post("/create", [WebFloorController::class, "create"]);
+            Route::post("/update", [WebFloorController::class, "update"]);
+            Route::delete("/delete", [WebFloorController::class, "destroy"]);
+        });
+
+        // akses operator & operator bangunan
+        Route::get("/datatable", [WebFloorController::class, "dataTable"]);
+        Route::get("/{id}/detail", [WebFloorController::class, "getDetail"]);
     });
 });

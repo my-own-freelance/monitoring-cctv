@@ -10,7 +10,7 @@ class Floor extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ["floor_name", "description", "image"];
+    protected $fillable = ["name", "description", "image", "building_id"];
 
     public function building()
     {

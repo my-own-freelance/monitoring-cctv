@@ -3,15 +3,16 @@
 namespace App\Http\Services;
 
 use App\Models\Building;
+use App\Models\Floor;
 use App\Models\UserBuilding;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
-class BuildingService
+class FloorService
 {
     public function dataTable($request)
     {
-        $query = Building::query();
+        $query = Floor::with("building");
 
         if ($request->query("search")) {
             $searchValue = $request->query("search")['value'];
@@ -33,7 +34,7 @@ class BuildingService
                     'data' => [],
                 ]);
             }
-            $query->where("id", $userBuilding->building_id);
+            $query->where("building_id", $userBuilding->building_id);
         }
 
         $recordsFiltered = $query->count();
@@ -75,7 +76,7 @@ class BuildingService
             return $item;
         });
 
-        $total = Building::count();
+        $total = Floor::count();
         return response()->json([
             'draw' => $request->query('draw'),
             'recordsFiltered' => $recordsFiltered,
@@ -87,9 +88,9 @@ class BuildingService
     public function getDetail($id)
     {
         try {
-            $building = Building::find($id);
+            $floor = Floor::find($id);
 
-            if (!$building) {
+            if (!$floor) {
                 return response()->json([
                     "status" => "error",
                     "message" => "Data tidak ditemukan",
@@ -98,7 +99,7 @@ class BuildingService
 
             return response()->json([
                 "status" => "success",
-                "data" => $building
+                "data" => $floor
             ]);
         } catch (\Exception $err) {
             return response()->json([
@@ -115,7 +116,8 @@ class BuildingService
             $rules = [
                 "name" => "required|string",
                 "description" => "required|string",
-                "image" => "required|image|max:1024|mimes:giv,svg,jpeg,png,jpg"
+                "image" => "required|image|max:1024|mimes:giv,svg,jpeg,png,jpg",
+                "building_id" => "required|integer",
             ];
 
             $messages = [
@@ -124,7 +126,8 @@ class BuildingService
                 "image.required" => "Gambar harus di isi",
                 "image.image" => "Gambar yang di upload tidak valid",
                 "image.max" => "Ukuran gambar maximal 1MB",
-                "image.mimes" => "Format gambar harus giv/svg/jpeg/png/jpg"
+                "image.mimes" => "Format gambar harus giv/svg/jpeg/png/jpg",
+                "building_id.required" => "Data Bangunan harus diisi"
             ];
 
             $validator = Validator::make($data, $rules, $messages);
@@ -135,18 +138,27 @@ class BuildingService
                 ], 400);
             }
 
-            if ($request->file('image')) {
-                $data['image'] = $request->file('image')->store('assets/building', 'public');
+            // cek existing building
+            $building = Building::find($data['building_id']);
+            if (!$building) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "Data Bangunan tidak ditemukan"
+                ], 404);
             }
 
-            Building::create($data);
+            if ($request->file('image')) {
+                $data['image'] = $request->file('image')->store('assets/floor', 'public');
+            }
+
+            Floor::create($data);
             return response()->json([
                 "status" => "success",
                 "message" => "Data berhasil dibuat"
             ]);
         } catch (\Exception $err) {
             if ($request->file("image")) {
-                unlink(public_path("storage/assets/building/" . $request->image->hashName()));
+                unlink(public_path("storage/assets/floor/" . $request->image->hashName()));
             }
             return response()->json([
                 "status" => "error",
@@ -163,7 +175,8 @@ class BuildingService
                 "id" => "required|integer",
                 "name" => "required|string",
                 "description" => "required|string",
-                "image" => "nullable"
+                "image" => "nullable",
+                "building_id" => "required|integer",
             ];
 
             if ($request->file('image')) {
@@ -177,7 +190,8 @@ class BuildingService
                 "description.required" => "Deskripsi harus diisi",
                 "image.image" => "Gambar yang di upload tidak valid",
                 "image.max" => "Ukuran gambar maximal 1MB",
-                "image.mimes" => "Format gambar harus giv/svg/jpeg/png/jpg"
+                "image.mimes" => "Format gambar harus giv/svg/jpeg/png/jpg",
+                "building_id.required" => "Data Bangunan harus diisi"
             ];
 
             $validator = Validator::make($data, $rules, $messages);
@@ -189,32 +203,41 @@ class BuildingService
                 ], 400);
             }
 
-            $building = Building::find($data['id']);
-            if (!$building) {
+            $floor = Floor::find($data['id']);
+            if (!$floor) {
                 return response()->json([
                     "status" => "error",
                     "message" => "Data tidak ditemukan"
                 ], 404);
             }
 
+            // cek existing building
+            $building = Building::find($data['building_id']);
+            if (!$building) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "Data Bangunan tidak ditemukan"
+                ], 404);
+            }
+
             // delete undefined data image
             unset($data["image"]);
             if ($request->file("image")) {
-                $oldImagePath = "public/" . $building->image;
+                $oldImagePath = "public/" . $floor->image;
                 if (Storage::exists($oldImagePath)) {
                     Storage::delete($oldImagePath);
                 }
-                $data["image"] = $request->file("image")->store("assets/building", "public");
+                $data["image"] = $request->file("image")->store("assets/floor", "public");
             }
 
-            $building->update($data);
+            $floor->update($data);
             return response()->json([
                 "status" => "success",
                 "message" => "Data berhasil diperbarui"
             ]);
         } catch (\Exception $err) {
             if ($request->file("image")) {
-                unlink(public_path("storage/assets/building/" . $request->image->hashName()));
+                unlink(public_path("storage/assets/floor/" . $request->image->hashName()));
             }
             return response()->json([
                 "status" => "error",
@@ -239,20 +262,20 @@ class BuildingService
             }
 
             $id = $request->id;
-            $building = Building::find($id);
-            if (!$building) {
+            $floor = Floor::find($id);
+            if (!$floor) {
                 return response()->json([
                     "status" => "error",
                     "message" => "Data tidak ditemukan"
                 ], 404);
             }
             // USING FOST DELETE, IMAGE TIDAK UDAH DI HAPUS
-            // $oldImagePath = "public/" . $building->image;
+            // $oldImagePath = "public/" . $floor->image;
             // if (Storage::exists($oldImagePath)) {
             //     Storage::delete($oldImagePath);
             // }
 
-            $building->delete();
+            $floor->delete();
             return response()->json([
                 "status" => "success",
                 "message" => "Data berhasil dihapus"

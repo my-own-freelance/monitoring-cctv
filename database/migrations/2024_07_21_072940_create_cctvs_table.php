@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('cctvs', function (Blueprint $table) {
             $table->bigIncrements("id");
-            $table->string('cctv_name');
-            $table->string("cctv_url");
+            $table->string('name');
+            $table->string("url");
             $table->longText('description')->nullable();
             $table->string("image")->nullable();
             $table->unsignedBigInteger("building_id");

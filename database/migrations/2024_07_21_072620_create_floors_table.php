@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('floors', function (Blueprint $table) {
             $table->bigIncrements("id");
-            $table->string("floor_name");
+            $table->string("name");
             $table->longText("description")->nullable();
             $table->string("image")->nullable();
             $table->unsignedBigInteger("building_id");

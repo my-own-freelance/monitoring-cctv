@@ -6,7 +6,7 @@
             <div class="card">
                 <div class="card-header">
                     <div class="card-header-left">
-                        <h5 class="text-uppercase title">Data Gedung</h5>
+                        <h5 class="text-uppercase title">Data Lantai</h5>
                     </div>
                     <div class="card-header-right">
                         <button class="btn btn-mini btn-info mr-1" onclick="return refreshData();">Refresh</button>
@@ -15,18 +15,19 @@
                 </div>
                 <div class="card-block">
                     <div class="table-responsive mt-3">
-                        <table class="table table-striped table-bordered nowrap dataTable" id="buildingTable">
+                        <table class="table table-striped table-bordered nowrap dataTable" id="floorTable">
                             <thead>
                                 <tr>
                                     <th class="all">#</th>
-                                    <th class="all">Nama Gedung</th>
+                                    <th class="all">Nama Lantai</th>
+                                    <th class="all">Area Gedung</th>
                                     <th class="all">Gambar</th>
                                     <th class="all">Deskripsi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td colspan="4" class="text-center"><small>Tidak Ada Data</small></td>
+                                    <td colspan="5" class="text-center"><small>Tidak Ada Data</small></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -50,12 +51,21 @@
                     <form>
                         <input class="form-control" id="id" type="hidden" name="id" />
                         <div class="form-group">
-                            <label for="name">Nama Gedung</label>
+                            <label for="name">Nama Lantai</label>
                             <input class="form-control" id="name" type="text" name="name"
-                                placeholder="masukkan nama gedung" required />
+                                placeholder="masukkan nama lantai" required />
                         </div>
                         <div class="form-group">
-                            <label for="image">Foto Gedung</label>
+                            <label for="building_id">Area Gedung</label>
+                            <select class="form-control form-control" id="building_id" name="building_id">
+                                <option value = "">Pilih Gedung</option>
+                                @foreach ($buildings as $building)
+                                    <option value = "{{ $building->id }}">{{ $building->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="image">Foto Lantai</label>
                             <input class="form-control" id="image" type="file" name="image"
                                 placeholder="upload gambar" />
                             <small class="text-danger">Max ukuran 1MB</small>
@@ -96,8 +106,8 @@
         })
 
         function dataTable() {
-            const url = "/api/admin/building/datatable";
-            dTable = $("#buildingTable").DataTable({
+            const url = "/api/admin/floor/datatable";
+            dTable = $("#floorTable").DataTable({
                 searching: true,
                 orderng: true,
                 lengthChange: true,
@@ -112,6 +122,8 @@
                     data: "action"
                 }, {
                     data: "name"
+                }, {
+                    data: "building.name"
                 }, {
                     data: "image",
                 }, {
@@ -143,7 +155,7 @@
 
         function getData(id) {
             $.ajax({
-                url: `/api/admin/building/${id}/detail`,
+                url: `/api/admin/floor/${id}/detail`,
                 method: "GET",
                 dataType: "json",
                 success: function(res) {
@@ -152,6 +164,7 @@
                         let d = res.data;
                         $("#id").val(d.id);
                         $("#name").val(d.name);
+                        $("#building_id").val(d.building_id).change();
                         $("#summernote").summernote('code', d.description);
                     })
                 },
@@ -168,6 +181,7 @@
             let formData = new FormData();
             formData.append("id", parseInt($("#id").val()));
             formData.append("name", $("#name").val());
+            formData.append("building_id", $("#building_id").val());
             formData.append("description", $("#summernote").summernote('code'));
             formData.append("image", document.getElementById("image").files[0]);
 
@@ -177,7 +191,7 @@
 
         function saveData(data, action) {
             $.ajax({
-                url: action == "update" ? "/api/admin/building/update" : "/api/admin/building/create",
+                url: action == "update" ? "/api/admin/floor/update" : "/api/admin/floor/create",
                 contentType: false,
                 processData: false,
                 method: "POST",
@@ -202,7 +216,7 @@
             let c = confirm("Apakah anda yakin untuk menghapus data ini ?");
             if (c) {
                 $.ajax({
-                    url: "/api/admin/building/delete",
+                    url: "/api/admin/floor/delete",
                     method: "DELETE",
                     data: {
                         id: id

@@ -24,6 +24,12 @@
                         <p>Gedung</p>
                     </a>
                 </li>
+                <li class="nav-item ml-3 {{ $routename == 'floor' ? 'active' : '' }}">
+                    <a href="{{ route('floor') }}">
+                        <i class="fas fa-layer-group"></i>
+                        <p>Lantai</p>
+                    </a>
+                </li>
 
             </ul>
         </div>

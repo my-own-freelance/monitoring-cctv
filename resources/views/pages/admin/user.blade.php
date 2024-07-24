@@ -31,7 +31,7 @@
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label for="fRole">Filter Gedung</label>
+                                        <label for="fRole">Filter Level</label>
                                         <select class="form-control" id="fRole" name="fRole">
                                             <option value="">All</option>
                                             <option value="superadmin">Super Admin</option>

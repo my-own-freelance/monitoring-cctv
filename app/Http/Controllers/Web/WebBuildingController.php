@@ -18,7 +18,8 @@ class WebBuildingController extends Controller
     public function index()
     {
         $title = "Data Gedung";
-        return view("pages.admin.building", compact('title'));
+        $user = Auth()->user();
+        return view("pages.admin.building", compact('title', 'user'));
     }
 
     // HANDLER API

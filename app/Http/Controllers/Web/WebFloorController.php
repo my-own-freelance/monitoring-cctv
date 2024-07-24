@@ -20,7 +20,8 @@ class WebFloorController extends Controller
     {
         $title = "Data Lantai";
         $buildings = Building::all();
-        return view("pages.admin.floor", compact('title', 'buildings'));
+        $user = Auth()->user();
+        return view("pages.admin.floor", compact('title', 'buildings', 'user'));
     }
 
     // HANDLER API
@@ -47,5 +48,10 @@ class WebFloorController extends Controller
     public function destroy(Request $request)
     {
         return $this->floorService->destroy($request);
+    }
+
+    public function list(Request $request)
+    {
+        return $this->floorService->list($request);
     }
 }

@@ -10,7 +10,9 @@
                     </div>
                     <div class="card-header-right">
                         <button class="btn btn-mini btn-info mr-1" onclick="return refreshData();">Refresh</button>
-                        <button class="btn btn-mini btn-primary" onclick="return addData();">Tambah Data</button>
+                        @if ($user->role == 'superadmin')
+                            <button class="btn btn-mini btn-primary" onclick="return addData();">Tambah Data</button>
+                        @endif
                     </div>
                 </div>
                 <div class="card-block">
@@ -20,8 +22,8 @@
                                 <tr>
                                     <th class="all">#</th>
                                     <th class="all">Nama Gedung</th>
-                                    <th class="all">Gambar</th>
                                     <th class="all">Deskripsi</th>
+                                    <th class="all">Gambar</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -113,9 +115,16 @@
                 }, {
                     data: "name"
                 }, {
-                    data: "image",
+                    data: "description",
+                    data: "description",
+                    "render": function(data, type, row, meta) {
+                        if (type === 'display') {
+                            return `<div class="wrap-text">${data}</div>`;
+                        }
+                        return data;
+                    }
                 }, {
-                    data: "description"
+                    data: "image"
                 }, ],
                 pageLength: 10,
             });

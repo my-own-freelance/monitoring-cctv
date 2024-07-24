@@ -12,7 +12,9 @@ class FloorService
 {
     public function dataTable($request)
     {
-        $query = Floor::with("building");
+        $query = Floor::with(["building" => function ($query) {
+            $query->select("id", "name");
+        }]);
 
         if ($request->query("search")) {
             $searchValue = $request->query("search")['value'];
@@ -65,7 +67,7 @@ class FloorService
 
             $image = '<div class="thumbnail">
                         <div class="thumb">
-                            <img src="' . Storage::url($item->image) . '" width="300px" height="300px" 
+                            <img src="' . Storage::url($item->image) . '" width="200px" height="200px" 
                             class="img-fluid img-thumbnail" alt="' . $item->name . '">
                         </div>
                     </div>';
@@ -127,7 +129,8 @@ class FloorService
                 "image.image" => "Gambar yang di upload tidak valid",
                 "image.max" => "Ukuran gambar maximal 1MB",
                 "image.mimes" => "Format gambar harus giv/svg/jpeg/png/jpg",
-                "building_id.required" => "Data Bangunan harus diisi"
+                "building_id.required" => "Data Gedung harus diisi",
+                "building_id.integer" => "Data tidak valid diisi"
             ];
 
             $validator = Validator::make($data, $rules, $messages);
@@ -143,7 +146,7 @@ class FloorService
             if (!$building) {
                 return response()->json([
                     "status" => "error",
-                    "message" => "Data Bangunan tidak ditemukan"
+                    "message" => "Data Gedung tidak ditemukan"
                 ], 404);
             }
 
@@ -191,7 +194,8 @@ class FloorService
                 "image.image" => "Gambar yang di upload tidak valid",
                 "image.max" => "Ukuran gambar maximal 1MB",
                 "image.mimes" => "Format gambar harus giv/svg/jpeg/png/jpg",
-                "building_id.required" => "Data Bangunan harus diisi"
+                "building_id.required" => "Data Gedung harus diisi",
+                "building_id.integer" => "Data tidak valid diisi"
             ];
 
             $validator = Validator::make($data, $rules, $messages);
@@ -216,7 +220,7 @@ class FloorService
             if (!$building) {
                 return response()->json([
                     "status" => "error",
-                    "message" => "Data Bangunan tidak ditemukan"
+                    "message" => "Data Gedung tidak ditemukan"
                 ], 404);
             }
 
@@ -279,6 +283,35 @@ class FloorService
             return response()->json([
                 "status" => "success",
                 "message" => "Data berhasil dihapus"
+            ]);
+        } catch (\Exception $err) {
+            return response()->json([
+                "status" => "error",
+                "message" => $err->getMessage()
+            ], 500);
+        }
+    }
+
+    public function list($request)
+    {
+        try {
+            $query = Floor::with(["building" => function ($query) {
+                $query->select("id", "name");
+            }]);
+
+            // jika tidak di filter by building id, limit 100 data saja yg ditampilkan secara random
+            if ($request->has("building_id")) {
+                $building_id = $request->query("building_id");
+                $query->where('building_id', $building_id);
+            } else {
+                $query->limit(100);
+            }
+
+            $data = $query->get();
+            return response()->json([
+                "status" => "success",
+                "data" => $data,
+                "id" => $request->query("building_id")
             ]);
         } catch (\Exception $err) {
             return response()->json([

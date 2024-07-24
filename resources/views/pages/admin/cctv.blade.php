@@ -1,12 +1,13 @@
 @extends('layouts.dashboard')
 @section('title', $title)
+
 @section('content')
     <div class="row mb-5">
         <div class="col-md-12" id="boxTable">
             <div class="card">
                 <div class="card-header">
                     <div class="card-header-left">
-                        <h5 class="text-uppercase title">Data Lantai</h5>
+                        <h5 class="text-uppercase title">Data CCTV</h5>
                     </div>
                     <div class="card-header-right">
                         <button class="btn btn-mini btn-info mr-1" onclick="return refreshData();">Refresh</button>
@@ -14,22 +15,75 @@
                             <button class="btn btn-mini btn-primary" onclick="return addData();">Tambah Data</button>
                         @endif
                     </div>
+                    @if ($user->role != 'operator_degung')
+                        <form class="navbar-left navbar-form mr-md-1 mt-3" id="formFilter">
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="fBuilding">Filter Gedung</label>
+                                        <select class="form-control" id="fBuilding" name="fBuilding">
+                                            <option value="">All</option>
+                                            @foreach ($buildings as $building)
+                                                <option value = "{{ $building->id }}">{{ $building->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="fFloor">Filter Lantai</label>
+                                        <select class="form-control" id="fFloor" name="fFloor">
+                                            <option value="">All</option>
+                                            {{-- request by api based on filter building  --}}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="pt-3">
+                                        <button class="mt-4 btn btn-sm btn-success mr-3" type="submit">Submit</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    @else
+                        {{-- operator gedung hanya bisa melakukan filter berdasarkan lantai  --}}
+                        <form class="navbar-left navbar-form mr-md-1 mt-3" id="formFilter">
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label for="fFloor">Filter Lantai</label>
+                                        <select class="form-control" id="fFloor" name="fFloor">
+                                            <option value="">All</option>
+                                            @foreach ($floors as $floor)
+                                                <option value = "{{ $floor->id }}">{{ $floor->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="pt-3">
+                                        <button class="mt-4 btn btn-sm btn-success mr-3" type="submit">Submit</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    @endif
                 </div>
                 <div class="card-block">
                     <div class="table-responsive mt-3">
-                        <table class="table table-striped table-bordered nowrap dataTable" id="floorTable">
+                        <table class="table table-striped table-bordered nowrap dataTable" id="cctvTable">
                             <thead>
                                 <tr>
                                     <th class="all">#</th>
-                                    <th class="all">Nama Lantai</th>
-                                    <th class="all">Area Gedung</th>
+                                    <th class="all">Nama CCTV</th>
+                                    <th class="all">Detail CCTV</th>
                                     <th class="all">Deskripsi</th>
                                     <th class="all">Gambar</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td colspan="5" class="text-center"><small>Tidak Ada Data</small></td>
+                                    <td colspan="6" class="text-center"><small>Tidak Ada Data</small></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -53,9 +107,14 @@
                     <form>
                         <input class="form-control" id="id" type="hidden" name="id" />
                         <div class="form-group">
-                            <label for="name">Nama Lantai</label>
+                            <label for="name">Nama CCTV</label>
                             <input class="form-control" id="name" type="text" name="name"
-                                placeholder="masukkan nama lantai" required />
+                                placeholder="masukkan nama cctv" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="url">URL CCTV</label>
+                            <input class="form-control" id="url" type="text" name="url"
+                                placeholder="masukkan url cctv" required />
                         </div>
                         <div class="form-group">
                             <label for="building_id">Area Gedung</label>
@@ -67,7 +126,14 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="image">Foto Lantai</label>
+                            <label for="floor_id">Area Lantai</label>
+                            <select class="form-control form-control" id="floor_id" name="floor_id">
+                                <option value = "">Pilih Lantai</option>
+                                {{-- request by api based on building area --}}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="image">Foto CCTV</label>
                             <input class="form-control" id="image" type="file" name="image"
                                 placeholder="upload gambar" />
                             <small class="text-danger">Max ukuran 1MB</small>
@@ -107,9 +173,11 @@
             dataTable();
         })
 
-        function dataTable() {
-            const url = "/api/admin/floor/datatable";
-            dTable = $("#floorTable").DataTable({
+        function dataTable(filter) {
+            let url = "/api/admin/cctv/datatable";
+            if (filter) url += '?' + filter;
+
+            dTable = $("#cctvTable").DataTable({
                 searching: true,
                 orderng: true,
                 lengthChange: true,
@@ -125,9 +193,8 @@
                 }, {
                     data: "name"
                 }, {
-                    data: "building.name"
+                    data: "area"
                 }, {
-                    data: "description",
                     data: "description",
                     "render": function(data, type, row, meta) {
                         if (type === 'display') {
@@ -141,6 +208,19 @@
                 pageLength: 10,
             });
         }
+
+        $('#formFilter').submit(function(e) {
+            e.preventDefault()
+            let dataFilter = {
+                building_id: $("#fBuilding").val(),
+                floor_id: $("#fFloor").val(),
+            }
+
+            dTable.clear();
+            dTable.destroy();
+            dataTable($.param(dataFilter))
+            return false
+        })
 
         function refreshData() {
             dTable.ajax.reload(null, false);
@@ -164,7 +244,7 @@
 
         function getData(id) {
             $.ajax({
-                url: `/api/admin/floor/${id}/detail`,
+                url: `/api/admin/cctv/${id}/detail`,
                 method: "GET",
                 dataType: "json",
                 success: function(res) {
@@ -173,8 +253,12 @@
                         let d = res.data;
                         $("#id").val(d.id);
                         $("#name").val(d.name);
+                        $("#url").val(d.url);
                         $("#building_id").val(d.building_id).change();
                         $("#summernote").summernote('code', d.description);
+
+                        // ambil data lantai gedung
+                        getFloorList(d.building_id, d.floor_id)
                     })
                 },
                 error: function(err) {
@@ -190,7 +274,9 @@
             let formData = new FormData();
             formData.append("id", parseInt($("#id").val()));
             formData.append("name", $("#name").val());
-            formData.append("building_id", $("#building_id").val());
+            formData.append("url", $("#url").val());
+            formData.append("building_id", parseInt($("#building_id").val()));
+            formData.append("floor_id", parseInt($("#floor_id").val()));
             formData.append("description", $("#summernote").summernote('code'));
             formData.append("image", document.getElementById("image").files[0]);
 
@@ -200,7 +286,7 @@
 
         function saveData(data, action) {
             $.ajax({
-                url: action == "update" ? "/api/admin/floor/update" : "/api/admin/floor/create",
+                url: action == "update" ? "/api/admin/cctv/update" : "/api/admin/cctv/create",
                 contentType: false,
                 processData: false,
                 method: "POST",
@@ -225,7 +311,7 @@
             let c = confirm("Apakah anda yakin untuk menghapus data ini ?");
             if (c) {
                 $.ajax({
-                    url: "/api/admin/floor/delete",
+                    url: "/api/admin/cctv/delete",
                     method: "DELETE",
                     data: {
                         id: id
@@ -244,6 +330,58 @@
                     }
                 })
             }
+        }
+
+        $("#building_id").change(function() {
+            let building_id = $(this).val();
+            getFloorList(building_id);
+        })
+
+        $("#fBuilding").change(function() {
+            let building_id = $(this).val();
+            getFloorList(building_id, null, true);
+        })
+
+        function getFloorList(building_id, floor_id = null, for_filter = false) {
+            $.ajax({
+                url: `/api/admin/floor/list?building_id=${building_id}`,
+                method: "GET",
+                header: {
+                    "Content-Type": "application/json"
+                },
+                beforeSend: function() {
+                    console.log("Sending data...!")
+                },
+                success: function(res) {
+                    // update input form
+                    if (!for_filter) {
+                        $("#floor_id").empty();
+                        $('#floor_id').append("<option value =''>Pilih Lantai</option > ");
+                        $.each(res.data, function(index, r) {
+                            $('#floor_id').append("<option value = '" + r.id + "' > " + r
+                                .name + " </option > ");
+                        })
+
+                        if (floor_id) {
+                            $("#floor_id").val(floor_id).change();
+                        }
+                    } else {
+                        // update filter data
+                        $("#fFloor").empty();
+                        $('#fFloor').append("<option value =''>All</option > ");
+                        $.each(res.data, function(index, r) {
+                            $('#fFloor').append("<option value = '" + r.id + "' > " + r
+                                .name + " </option > ");
+                        })
+                    }
+                },
+                error: function(err) {
+                    console.log("error :", err);
+                    showMessage("danger", "flaticon-error", "Peringatan", err.message || err
+                        .responseJSON
+                        ?.message);
+                }
+            })
         }
     </script>
 @endpush

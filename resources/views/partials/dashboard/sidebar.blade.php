@@ -30,6 +30,12 @@
                         <p>Lantai</p>
                     </a>
                 </li>
+                <li class="nav-item ml-3 {{ $routename == 'cctv' ? 'active' : '' }}">
+                    <a href="{{ route('cctv') }}">
+                        <i class="fas fa-video"></i>
+                        <p>Cctv</p>
+                    </a>
+                </li>
 
             </ul>
         </div>

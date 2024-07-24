@@ -3,21 +3,44 @@
 namespace App\Http\Services;
 
 use App\Models\Building;
+use App\Models\Cctv;
+use App\Models\Floor;
 use App\Models\UserBuilding;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
-class BuildingService
+class CctvService
 {
     public function dataTable($request)
     {
-        $query = Building::query();
+        $query = Cctv::with(["floor" => function ($query) {
+            $query->select("id", "name");
+        }])->with(["building" => function ($query) {
+            $query->select("id", "name");
+        }]);
 
         if ($request->query("search")) {
             $searchValue = $request->query("search")['value'];
             $query->where(function ($query) use ($searchValue) {
                 $query->where('name', 'like', '%' . $searchValue . '%')
+                    ->orWhere('url', 'like', '%' . $searchValue . '%')
                     ->orWhere('description', 'like', '%' . $searchValue . '%');
+            });
+        }
+
+        // filter building_id
+        if ($request->query("building_id") && $request->query('building_id') != "") {
+            $building_id = $request->query("building_id");
+            $query->where(function ($query) use ($building_id) {
+                $query->where('building_id', $building_id);
+            });
+        }
+
+        // filter floor_id
+        if ($request->query("floor_id") && $request->query('floor_id') != "") {
+            $floor_id = $request->query("floor_id");
+            $query->where(function ($query) use ($floor_id) {
+                $query->where('floor_id', $floor_id);
             });
         }
 
@@ -33,7 +56,7 @@ class BuildingService
                     'data' => [],
                 ]);
             }
-            $query->where("id", $userBuilding->building_id);
+            $query->where("building_id", $userBuilding->building_id);
         }
 
         $recordsFiltered = $query->count();
@@ -69,13 +92,21 @@ class BuildingService
                         </div>
                     </div>';
 
+            $area = '<small>
+                        <strong>Gedung</strong> : ' . $item->building->name . '
+                        <br>
+                        <strong>Lantai</strong> : ' . $item->floor->name . '
+                        <br>
+                        <strong>Url CCTV </strong>: ' . $item->url . '
+                        </small>';
             $item['action'] = $action;
             $item['mobile_image'] = url("/") . Storage::url($item->image);
             $item['image'] = $image;
+            $item['area'] = $area;
             return $item;
         });
 
-        $total = Building::count();
+        $total = Cctv::count();
         return response()->json([
             'draw' => $request->query('draw'),
             'recordsFiltered' => $recordsFiltered,
@@ -87,9 +118,9 @@ class BuildingService
     public function getDetail($id)
     {
         try {
-            $building = Building::find($id);
+            $cctv = Cctv::find($id);
 
-            if (!$building) {
+            if (!$cctv) {
                 return response()->json([
                     "status" => "error",
                     "message" => "Data tidak ditemukan",
@@ -98,7 +129,7 @@ class BuildingService
 
             return response()->json([
                 "status" => "success",
-                "data" => $building
+                "data" => $cctv
             ]);
         } catch (\Exception $err) {
             return response()->json([
@@ -114,17 +145,25 @@ class BuildingService
             $data = $request->all();
             $rules = [
                 "name" => "required|string",
+                "url" => "required|string",
                 "description" => "required|string",
-                "image" => "required|image|max:1024|mimes:giv,svg,jpeg,png,jpg"
+                "image" => "required|image|max:1024|mimes:giv,svg,jpeg,png,jpg",
+                "building_id" => "required|integer",
+                "floor_id" => "required|integer",
             ];
 
             $messages = [
                 "name.required" => "Judul harus diisi",
+                "url.required" => "Url CCTV harus diisi",
                 "description.required" => "Deskripsi harus diisi",
                 "image.required" => "Gambar harus di isi",
                 "image.image" => "Gambar yang di upload tidak valid",
                 "image.max" => "Ukuran gambar maximal 1MB",
-                "image.mimes" => "Format gambar harus giv/svg/jpeg/png/jpg"
+                "image.mimes" => "Format gambar harus giv/svg/jpeg/png/jpg",
+                "building_id.required" => "Data Gedung harus diisi",
+                "building_id.integer" => "Data Gedung tidak valid",
+                "floor_id.required" => "Data Lantai harus diisi",
+                "floor_id.integer" => "Data Lantai tidak valid",
             ];
 
             $validator = Validator::make($data, $rules, $messages);
@@ -135,18 +174,38 @@ class BuildingService
                 ], 400);
             }
 
-            if ($request->file('image')) {
-                $data['image'] = $request->file('image')->store('assets/building', 'public');
+            // cek existing building
+            $building = Building::find($data['building_id']);
+            if (!$building) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "Data Gedung tidak ditemukan"
+                ], 404);
             }
 
-            Building::create($data);
+            // cek existing floor
+            $floor = Floor::where('id', $data['floor_id'])
+                ->where('building_id', $data['building_id'])
+                ->first();
+            if (!$floor) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "Data Lantai tidak ditemukan"
+                ], 404);
+            }
+
+            if ($request->file('image')) {
+                $data['image'] = $request->file('image')->store('assets/cctv', 'public');
+            }
+
+            Cctv::create($data);
             return response()->json([
                 "status" => "success",
                 "message" => "Data berhasil dibuat"
             ]);
         } catch (\Exception $err) {
             if ($request->file("image")) {
-                unlink(public_path("storage/assets/building/" . $request->image->hashName()));
+                unlink(public_path("storage/assets/cctv/" . $request->image->hashName()));
             }
             return response()->json([
                 "status" => "error",
@@ -163,7 +222,9 @@ class BuildingService
                 "id" => "required|integer",
                 "name" => "required|string",
                 "description" => "required|string",
-                "image" => "nullable"
+                "image" => "nullable",
+                "building_id" => "required|integer",
+                "floor_id" => "required|integer",
             ];
 
             if ($request->file('image')) {
@@ -177,7 +238,11 @@ class BuildingService
                 "description.required" => "Deskripsi harus diisi",
                 "image.image" => "Gambar yang di upload tidak valid",
                 "image.max" => "Ukuran gambar maximal 1MB",
-                "image.mimes" => "Format gambar harus giv/svg/jpeg/png/jpg"
+                "image.mimes" => "Format gambar harus giv/svg/jpeg/png/jpg",
+                "building_id.required" => "Data Gedung harus diisi",
+                "building_id.integer" => "Data Gedung tidak valid",
+                "floor_id.required" => "Data Lantai harus diisi",
+                "floor_id.integer" => "Data Lantai tidak valid",
             ];
 
             $validator = Validator::make($data, $rules, $messages);
@@ -189,8 +254,28 @@ class BuildingService
                 ], 400);
             }
 
-            $building = Building::find($data['id']);
+            // cek existing building
+            $building = Building::find($data['building_id']);
             if (!$building) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "Data Gedung tidak ditemukan"
+                ], 404);
+            }
+
+            // cek existing floor
+            $floor = Floor::where('id', $data['floor_id'])
+                ->where('building_id', $data['building_id'])
+                ->first();
+            if (!$floor) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "Data Lantai tidak ditemukan"
+                ], 404);
+            }
+
+            $cctv = Cctv::find($data['id']);
+            if (!$cctv) {
                 return response()->json([
                     "status" => "error",
                     "message" => "Data tidak ditemukan"
@@ -200,21 +285,21 @@ class BuildingService
             // delete undefined data image
             unset($data["image"]);
             if ($request->file("image")) {
-                $oldImagePath = "public/" . $building->image;
+                $oldImagePath = "public/" . $cctv->image;
                 if (Storage::exists($oldImagePath)) {
                     Storage::delete($oldImagePath);
                 }
-                $data["image"] = $request->file("image")->store("assets/building", "public");
+                $data["image"] = $request->file("image")->store("assets/cctv", "public");
             }
 
-            $building->update($data);
+            $cctv->update($data);
             return response()->json([
                 "status" => "success",
                 "message" => "Data berhasil diperbarui"
             ]);
         } catch (\Exception $err) {
             if ($request->file("image")) {
-                unlink(public_path("storage/assets/building/" . $request->image->hashName()));
+                unlink(public_path("storage/assets/cctv/" . $request->image->hashName()));
             }
             return response()->json([
                 "status" => "error",
@@ -239,20 +324,20 @@ class BuildingService
             }
 
             $id = $request->id;
-            $building = Building::find($id);
-            if (!$building) {
+            $cctv = Cctv::find($id);
+            if (!$cctv) {
                 return response()->json([
                     "status" => "error",
                     "message" => "Data tidak ditemukan"
                 ], 404);
             }
             // USING FOST DELETE, IMAGE TIDAK UDAH DI HAPUS
-            // $oldImagePath = "public/" . $building->image;
+            // $oldImagePath = "public/" . $cctv->image;
             // if (Storage::exists($oldImagePath)) {
             //     Storage::delete($oldImagePath);
             // }
 
-            $building->delete();
+            $cctv->delete();
             return response()->json([
                 "status" => "success",
                 "message" => "Data berhasil dihapus"

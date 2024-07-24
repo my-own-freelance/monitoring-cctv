@@ -24,7 +24,7 @@
             "families": ["Flaticon", "Font Awesome 5 Solid", "Font Awesome 5 Regular", "Font Awesome 5 Brands",
                 "simple-line-icons"
             ],
-            urls: ['{{ asset("dashboard/css/fonts.min.css") }}']
+            urls: ['{{ asset('dashboard/css/fonts.min.css') }}']
         },
         active: function() {
             sessionStorage.fonts = true;
@@ -45,3 +45,12 @@
 <link rel="stylesheet" href="{{ asset('dashboard/icon/themify-icons/themify-icons.css') }}">
 <link rel="stylesheet" href="{{ asset('dashboard/icon/icofont/css/icofont.css') }}">
 <link rel="stylesheet" href="{{ asset('dashboard/icon/ion-icon/css/ionicons.min.css') }}">
+
+{{-- global style --}}
+<style>
+    .wrap-text {
+        max-width: 400px;
+        word-wrap: break-word;
+        white-space: normal;
+    }
+</style>

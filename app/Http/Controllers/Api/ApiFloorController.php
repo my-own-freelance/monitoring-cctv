@@ -40,4 +40,9 @@ class ApiFloorController extends Controller
     {
         return $this->floorService->destroy($request);
     }
+
+    public function list(Request $request)
+    {
+        return $this->floorService->list($request);
+    }
 }

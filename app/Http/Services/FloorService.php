@@ -4,8 +4,6 @@ namespace App\Http\Services;
 
 use App\Models\Building;
 use App\Models\Floor;
-use App\Models\UserBuilding;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class FloorService
@@ -19,8 +17,7 @@ class FloorService
         if ($request->query("search")) {
             $searchValue = $request->query("search")['value'];
             $query->where(function ($query) use ($searchValue) {
-                $query->where('name', 'like', '%' . $searchValue . '%')
-                    ->orWhere('description', 'like', '%' . $searchValue . '%');
+                $query->where('name', 'like', '%' . $searchValue . '%');
             });
         }
 
@@ -32,19 +29,15 @@ class FloorService
             });
         }
 
-        // OPERATOR GEDUNG BISA LIHAT DATA SESUI GEDUNG DIA
+        // OPERATOR CCTV TIDAK BISA LIHAT DATA
         $user = auth()->user();
-        if ($user->role == "operator_gedung") {
-            $userBuilding = UserBuilding::where('user_id', $user->id)->first();
-            if (!$userBuilding) {
-                return response()->json([
-                    'draw' => $request->query('draw'),
-                    'recordsFiltered' => 0,
-                    'recordsTotal' => 0,
-                    'data' => [],
-                ]);
-            }
-            $query->where("building_id", $userBuilding->building_id);
+        if ($user->role == "operator_cctv") {
+            return response()->json([
+                'draw' => $request->query('draw'),
+                'recordsFiltered' => 0,
+                'recordsTotal' => 0,
+                'data' => [],
+            ]);
         }
 
         $recordsFiltered = $query->count();
@@ -59,7 +52,7 @@ class FloorService
 
             // SUPERADMIN BISA LIHAT SEMUA DATA DAN KELOLA DATA
             // OPERATOR HANYA BISA LIHAT SEMUA DATA
-            // OPERATOR GEDUNG BISA LIHAT DATA SESUI GEDUNG DIA
+            // OPERATOR CCTV TIDAK BISA LIHAT DATA
             $user = auth()->user();
             if ($user->role == "superadmin") {
                 $action = "<div class='dropdown-primary dropdown open'>
@@ -73,16 +66,7 @@ class FloorService
                             </div>";
             }
 
-            $image = '<div class="thumbnail">
-                        <div class="thumb">
-                            <img src="' . Storage::url($item->image) . '" width="200px" height="200px" 
-                            class="img-fluid img-thumbnail" alt="' . $item->name . '">
-                        </div>
-                    </div>';
-
             $item['action'] = $action;
-            $item['mobile_image'] = url("/") . Storage::url($item->image);
-            $item['image'] = $image;
             return $item;
         });
 
@@ -107,8 +91,6 @@ class FloorService
                 ], 404);
             }
 
-            $floor["image_mobile"] = url("/") . Storage::url($floor->image);
-
             return response()->json([
                 "status" => "success",
                 "data" => $floor
@@ -127,18 +109,11 @@ class FloorService
             $data = $request->all();
             $rules = [
                 "name" => "required|string",
-                "description" => "required|string",
-                "image" => "required|image|max:1024|mimes:giv,svg,jpeg,png,jpg",
                 "building_id" => "required|integer",
             ];
 
             $messages = [
                 "name.required" => "Nama Lantai harus diisi",
-                "description.required" => "Deskripsi harus diisi",
-                "image.required" => "Gambar harus di isi",
-                "image.image" => "Gambar yang di upload tidak valid",
-                "image.max" => "Ukuran gambar maximal 1MB",
-                "image.mimes" => "Format gambar harus giv/svg/jpeg/png/jpg",
                 "building_id.required" => "Data Gedung harus diisi",
                 "building_id.integer" => "Data tidak valid diisi"
             ];
@@ -160,19 +135,12 @@ class FloorService
                 ], 404);
             }
 
-            if ($request->file('image')) {
-                $data['image'] = $request->file('image')->store('assets/floor', 'public');
-            }
-
             Floor::create($data);
             return response()->json([
                 "status" => "success",
                 "message" => "Data berhasil dibuat"
             ]);
         } catch (\Exception $err) {
-            if ($request->file("image")) {
-                unlink(public_path("storage/assets/floor/" . $request->image->hashName()));
-            }
             return response()->json([
                 "status" => "error",
                 "message" => $err->getMessage(),
@@ -187,23 +155,13 @@ class FloorService
             $rules = [
                 "id" => "required|integer",
                 "name" => "required|string",
-                "description" => "required|string",
-                "image" => "nullable",
                 "building_id" => "required|integer",
             ];
-
-            if ($request->file('image')) {
-                $rules['image'] .= '|image|max:1024|mimes:giv,svg,jpeg,png,jpg';
-            }
 
             $messages = [
                 "id.required" => "Data ID harus diisi",
                 "id.integer" => "Type ID tidak sesuai",
                 "name.required" => "Nam Lantai harus diisi",
-                "description.required" => "Deskripsi harus diisi",
-                "image.image" => "Gambar yang di upload tidak valid",
-                "image.max" => "Ukuran gambar maximal 1MB",
-                "image.mimes" => "Format gambar harus giv/svg/jpeg/png/jpg",
                 "building_id.required" => "Data Gedung harus diisi",
                 "building_id.integer" => "Data tidak valid diisi"
             ];
@@ -234,25 +192,12 @@ class FloorService
                 ], 404);
             }
 
-            // delete undefined data image
-            unset($data["image"]);
-            if ($request->file("image")) {
-                $oldImagePath = "public/" . $floor->image;
-                if (Storage::exists($oldImagePath)) {
-                    Storage::delete($oldImagePath);
-                }
-                $data["image"] = $request->file("image")->store("assets/floor", "public");
-            }
-
             $floor->update($data);
             return response()->json([
                 "status" => "success",
                 "message" => "Data berhasil diperbarui"
             ]);
         } catch (\Exception $err) {
-            if ($request->file("image")) {
-                unlink(public_path("storage/assets/floor/" . $request->image->hashName()));
-            }
             return response()->json([
                 "status" => "error",
                 "message" => $err->getMessage(),
@@ -283,11 +228,6 @@ class FloorService
                     "message" => "Data tidak ditemukan"
                 ], 404);
             }
-            // USING FOST DELETE, IMAGE TIDAK UDAH DI HAPUS
-            // $oldImagePath = "public/" . $floor->image;
-            // if (Storage::exists($oldImagePath)) {
-            //     Storage::delete($oldImagePath);
-            // }
 
             $floor->delete();
             return response()->json([

@@ -19,20 +19,20 @@
                     </span>
                     <h4 class="text-section">Master</h4>
                 </li>
-                @if ($user->role != 'operator_gedung')
+                @if ($user->role != 'operator_cctv')
                     <li class="nav-item ml-3 {{ $routename == 'building' ? 'active' : '' }}">
                         <a href="{{ route('building') }}">
                             <i class="fas fa-building"></i>
                             <p>Gedung</p>
                         </a>
                     </li>
+                    <li class="nav-item ml-3 {{ $routename == 'floor' ? 'active' : '' }}">
+                        <a href="{{ route('floor') }}">
+                            <i class="fas fa-layer-group"></i>
+                            <p>Lantai</p>
+                        </a>
+                    </li>
                 @endif
-                <li class="nav-item ml-3 {{ $routename == 'floor' ? 'active' : '' }}">
-                    <a href="{{ route('floor') }}">
-                        <i class="fas fa-layer-group"></i>
-                        <p>Lantai</p>
-                    </a>
-                </li>
                 <li class="nav-item ml-3 {{ $routename == 'cctv' ? 'active' : '' }}">
                     <a href="{{ route('cctv') }}">
                         <i class="fas fa-video"></i>
@@ -51,7 +51,7 @@
                         <p>Setting Account</p>
                     </a>
                 </li>
-                @if ($user->role != 'operator_gedung')
+                @if ($user->role != 'operator_cctv')
                     <li class="nav-item ml-3 {{ $routename == 'user' ? 'active' : '' }}">
                         <a href="{{ route('user') }}">
                             <i class="fas fa-users-cog"></i>

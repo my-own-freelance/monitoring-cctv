@@ -15,8 +15,6 @@ return new class extends Migration
             $table->bigIncrements("id");
             $table->string('name');
             $table->string("url");
-            $table->longText('description')->nullable();
-            $table->string("image")->nullable();
             $table->unsignedBigInteger("building_id");
             $table->unsignedBigInteger("floor_id");
             $table->foreign("building_id")

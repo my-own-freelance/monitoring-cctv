@@ -2,7 +2,7 @@
 @section('title', $title)
 @section('content')
     <div class="row">
-        @if ($user->role != 'operator_gedung')
+        @if ($user->role != 'operator_cctv')
             <div class="col-6 col-sm-6 col-md-3">
                 <div class="card card-stats card-round">
                     <div class="card-body">
@@ -24,21 +24,20 @@
                     </div>
                 </div>
             </div>
-        @else
             <div class="col-6 col-sm-6 col-md-3">
                 <div class="card card-stats card-round">
-                    <div class="card-body">
-                        <a href="{{ route('building') }}">
+                    <div class="card-body ">
+                        <a href="{{ route('floor') }}">
                             <div class="row">
                                 <div class="col-5">
                                     <div class="icon-big text-center">
-                                        <i class="flaticon-store text-info"></i>
+                                        <i class="flaticon-layers text-success"></i>
                                     </div>
                                 </div>
                                 <div class="col-7 col-stats">
                                     <div class="numbers">
-                                        <p class="card-category">Gedung</p>
-                                        <h4 class="card-title">{{ $buildingName }}</h4>
+                                        <p class="card-category">Lantai</p>
+                                        <h4 class="card-title">{{ $floors }}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -47,27 +46,6 @@
                 </div>
             </div>
         @endif
-        <div class="col-6 col-sm-6 col-md-3">
-            <div class="card card-stats card-round">
-                <div class="card-body ">
-                    <a href="{{ route('floor') }}">
-                        <div class="row">
-                            <div class="col-5">
-                                <div class="icon-big text-center">
-                                    <i class="flaticon-layers text-success"></i>
-                                </div>
-                            </div>
-                            <div class="col-7 col-stats">
-                                <div class="numbers">
-                                    <p class="card-category">Lantai</p>
-                                    <h4 class="card-title">{{ $floors }}</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
         <div class="col-6 col-sm-6 col-md-3">
             <div class="card card-stats card-round">
                 <div class="card-body ">
@@ -89,7 +67,7 @@
                 </div>
             </div>
         </div>
-        @if ($user->role != 'operator_gedung')
+        @if ($user->role != 'operator_cctv')
             <div class="col-6 col-sm-6 col-md-3">
                 <div class="card card-stats card-round">
                     <div class="card-body ">

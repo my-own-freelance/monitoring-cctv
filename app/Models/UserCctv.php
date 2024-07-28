@@ -6,19 +6,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class UserBuilding extends Model
+class UserCctv extends Model
 {
     use HasFactory;
 
-    protected $fillable = ["user_id", "building_id"];
+    protected $fillable = ["user_id", "cctv_id"];
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function building()
+    public function cctv()
     {
-        return $this->belongsTo(Building::class);
+        return $this->belongsTo(Cctv::class);
     }
 }

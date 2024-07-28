@@ -3,12 +3,14 @@
 use App\Http\Controllers\Api\ApiBuildingController;
 use App\Http\Controllers\Api\ApiCctvController;
 use App\Http\Controllers\Api\ApiFloorController;
+use App\Http\Controllers\Api\ApiUserCctvController;
 use App\Http\Controllers\Api\ApiUserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CustomTemplateController;
 use App\Http\Controllers\Web\WebBuildingController;
 use App\Http\Controllers\Web\WebCctvController;
 use App\Http\Controllers\Web\WebFloorController;
+use App\Http\Controllers\Web\WebUserCctvController;
 use App\Http\Controllers\Web\WebUserController;
 use App\Http\Controllers\WebAuthController;
 use Illuminate\Http\Request;
@@ -50,7 +52,7 @@ Route::group(["middleware" => ["api", "auth:api"]], function () {
             Route::delete("/delete", [ApiBuildingController::class, "destroy"]);
         });
 
-        // akses operator & operator gedung
+        // akses operator & operator cctv
         Route::get("datatable", [ApiBuildingController::class, "dataTable"]);
         Route::get("{id}/detail", [ApiBuildingController::class, "getDetail"]);
     });
@@ -64,7 +66,7 @@ Route::group(["middleware" => ["api", "auth:api"]], function () {
             Route::delete("/delete", [ApiFloorController::class, "destroy"]);
         });
 
-        // akses operator & operator gedung
+        // akses operator & operator cctv
         Route::get("datatable", [ApiFloorController::class, "dataTable"]);
         Route::get("/list", [ApiFloorController::class, "list"]);
         Route::get("{id}/detail", [ApiFloorController::class, "getDetail"]);
@@ -79,7 +81,7 @@ Route::group(["middleware" => ["api", "auth:api"]], function () {
             Route::delete("/delete", [ApiCctvController::class, "destroy"]);
         });
 
-        // akses operator & operator gedung
+        // akses operator & operator cctv
         Route::get("datatable", [ApiCctvController::class, "dataTable"]);
         Route::get("{id}/detail", [ApiCctvController::class, "getDetail"]);
     });
@@ -94,7 +96,7 @@ Route::group(["middleware" => ["api", "auth:api"]], function () {
             Route::post("/update-status", [ApiUserController::class, "updateStatus"]);
         });
 
-        // akses operator & operator gedung
+        // akses operator & operator cctv
         Route::get("/datatable", [ApiUserController::class, "dataTable"]);
         Route::get("/{id}/detail", [ApiUserController::class, "getDetail"]);
     });
@@ -103,6 +105,13 @@ Route::group(["middleware" => ["api", "auth:api"]], function () {
     Route::group(["prefix" => "account"], function () {
         Route::get("/detail", [AuthController::class, "detail"]);
         Route::post("/update", [AuthController::class, "update"]);
+    });
+
+    // User CCTV - only oprator cctv
+    Route::group(["middleware" => "check.role:operator_cctv", "prefix" => "user-cctv"], function () {
+        Route::post("/create", [ApiUserCctvController::class, "create"]);
+        Route::get("/datatable", [ApiUserCctvController::class, "dataTable"]);
+        Route::delete("/delete", [ApiUserCctvController::class, "destroy"]);
     });
 });
 
@@ -123,7 +132,7 @@ Route::prefix("admin")->namespace("admin")->middleware(["check.auth"])->group(fu
             Route::delete("/delete", [WebBuildingController::class, "destroy"]);
         });
 
-        // akses operator & operator gedung
+        // akses operator & operator cctv
         Route::get("/datatable", [WebBuildingController::class, "dataTable"]);
         Route::get("/{id}/detail", [WebBuildingController::class, "getDetail"]);
     });
@@ -137,7 +146,7 @@ Route::prefix("admin")->namespace("admin")->middleware(["check.auth"])->group(fu
             Route::delete("/delete", [WebFloorController::class, "destroy"]);
         });
 
-        // akses operator & operator gedung
+        // akses operator & operator cctv
         Route::get("/datatable", [WebFloorController::class, "dataTable"]);
         Route::get("/list", [WebFloorController::class, "list"]);
         Route::get("/{id}/detail", [WebFloorController::class, "getDetail"]);
@@ -152,7 +161,7 @@ Route::prefix("admin")->namespace("admin")->middleware(["check.auth"])->group(fu
             Route::delete("/delete", [WebCctvController::class, "destroy"]);
         });
 
-        // akses operator & operator gedung
+        // akses operator & operator cctv
         Route::get("/datatable", [WebCctvController::class, "dataTable"]);
         Route::get("/{id}/detail", [WebCctvController::class, "getDetail"]);
     });
@@ -168,7 +177,7 @@ Route::prefix("admin")->namespace("admin")->middleware(["check.auth"])->group(fu
             Route::post("/update-status", [WebUserController::class, "updateStatus"]);
         });
 
-        // akses operator & operator gedung
+        // akses operator & operator cctv
         Route::get("/datatable", [WebUserController::class, "dataTable"]);
         Route::get("/{id}/detail", [WebUserController::class, "getDetail"]);
     });
@@ -177,5 +186,12 @@ Route::prefix("admin")->namespace("admin")->middleware(["check.auth"])->group(fu
     Route::group(["prefix" => "account"], function () {
         Route::get("/detail", [WebAuthController::class, "detail"]);
         Route::post("/update", [WebAuthController::class, "update"]);
+    });
+
+    // User CCTV - only oprator cctv
+    Route::group(["middleware" => "check.role:operator_cctv", "prefix" => "user-cctv"], function () {
+        Route::post("/create", [WebUserCctvController::class, "create"]);
+        Route::get("/datatable", [WebUserCctvController::class, "dataTable"]);
+        Route::delete("/delete", [WebUserCctvController::class, "destroy"]);
     });
 });

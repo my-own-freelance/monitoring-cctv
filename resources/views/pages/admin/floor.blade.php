@@ -14,7 +14,7 @@
                             <button class="btn btn-mini btn-primary" onclick="return addData();">Tambah Data</button>
                         @endif
                     </div>
-                    @if ($user->role != 'operator_gedung')
+                    @if ($user->role != 'operator_cctv')
                         <form class="navbar-left navbar-form mr-md-1 mt-3" id="formFilter">
                             <div class="row">
                                 <div class="col-md-3">
@@ -45,8 +45,6 @@
                                     <th class="all">#</th>
                                     <th class="all">Nama Lantai</th>
                                     <th class="all">Area Gedung</th>
-                                    <th class="all">Deskripsi</th>
-                                    <th class="all">Gambar</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -79,7 +77,7 @@
                             <input class="form-control" id="name" type="text" name="name"
                                 placeholder="masukkan nama lantai" required />
                         </div>
-                        <div class="form-group">
+                        {{-- <div class="form-group">
                             <label for="building_id">Area Gedung</label>
                             <select class="form-control form-control" id="building_id" name="building_id">
                                 <option value = "">Pilih Gedung</option>
@@ -87,16 +85,15 @@
                                     <option value = "{{ $building->id }}">{{ $building->name }}</option>
                                 @endforeach
                             </select>
-                        </div>
+                        </div> --}}
                         <div class="form-group">
-                            <label for="image">Foto Lantai</label>
-                            <input class="form-control" id="image" type="file" name="image"
-                                placeholder="upload gambar" />
-                            <small class="text-danger">Max ukuran 1MB</small>
-                        </div>
-                        <div class="form-group">
-                            <label for="description">Dekripsi</label>
-                            <div id="summernote" name="description"></div>
+                            <label for="building_id">Area Gedung</label>
+                            <select class="form-control" id="building_id" name="building_id">
+                                <option value="">Pilih Gedung</option>
+                                @foreach ($buildings as $building)
+                                    <option value = "{{ $building->id }}">{{ $building->name }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="form-group">
                             <button class="btn btn-sm btn-primary" type="submit" id="submit">
@@ -114,16 +111,13 @@
 @endsection
 @push('scripts')
     <script src="{{ asset('dashboard/js/plugin/datatables/datatables.min.js') }}"></script>
-    <script src="{{ asset('dashboard/js/plugin/summernote/summernote-bs4.min.js') }}"></script>
+    <script src="{{ asset('dashboard/js/plugin/select2/select2.full.min.js') }}"></script>
     <script>
-        $('#summernote').summernote({
-            placeholder: 'masukkan deskripsi',
-            fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New'],
-            tabsize: 2,
-            height: 300
-        });
-
         let dTable = null;
+
+        $('#fBuilding,#building_id').select2({
+            theme: "bootstrap"
+        });
 
         $(function() {
             dataTable();
@@ -150,17 +144,6 @@
                     data: "name"
                 }, {
                     data: "building.name"
-                }, {
-                    data: "description",
-                    data: "description",
-                    "render": function(data, type, row, meta) {
-                        if (type === 'display') {
-                            return `<div class="wrap-text">${data}</div>`;
-                        }
-                        return data;
-                    }
-                }, {
-                    data: "image"
                 }, ],
                 pageLength: 10,
             });
@@ -181,7 +164,6 @@
 
         function refreshData() {
             dTable.ajax.reload(null, false);
-            $("#summernote").summernote('code', "");
         }
 
 
@@ -195,7 +177,6 @@
             $("#formEditable").slideUp(200, function() {
                 $("#boxTable").removeClass("col-md-8").addClass("col-md-12");
                 $("#reset").click();
-                $("#summernote").summernote('code', "");
             })
         }
 
@@ -211,7 +192,6 @@
                         $("#id").val(d.id);
                         $("#name").val(d.name);
                         $("#building_id").val(d.building_id).change();
-                        $("#summernote").summernote('code', d.description);
                     })
                 },
                 error: function(err) {
@@ -228,8 +208,6 @@
             formData.append("id", parseInt($("#id").val()));
             formData.append("name", $("#name").val());
             formData.append("building_id", $("#building_id").val());
-            formData.append("description", $("#summernote").summernote('code'));
-            formData.append("image", document.getElementById("image").files[0]);
 
             saveData(formData, $("#formEditable").attr("data-action"));
             return false;

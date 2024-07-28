@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('buildings', function (Blueprint $table) {
             $table->bigIncrements("id");
             $table->string("name");
-            $table->longText("description")->nullable();
             $table->string("image")->nullable();
             $table->timestamps();
             $table->softDeletes();

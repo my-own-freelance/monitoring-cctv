@@ -14,8 +14,6 @@ return new class extends Migration
         Schema::create('floors', function (Blueprint $table) {
             $table->bigIncrements("id");
             $table->string("name");
-            $table->longText("description")->nullable();
-            $table->string("image")->nullable();
             $table->unsignedBigInteger("building_id");
             $table->foreign("building_id")
                 ->references("id")

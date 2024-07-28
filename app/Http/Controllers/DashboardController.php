@@ -7,6 +7,7 @@ use App\Models\Cctv;
 use App\Models\Floor;
 use App\Models\User;
 use App\Models\UserBuilding;
+use App\Models\UserCctv;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 
@@ -22,12 +23,10 @@ class DashboardController extends Controller
         $users = User::count();
         $buildingName = "NOT ASSIGN";
 
-        if ($user->role == "operator_gedung") {
-            $userBuilding = UserBuilding::with("building")->where("user_id", $user->id)->first();
-            if ($userBuilding) {
-                $buildingName = $userBuilding->building->name;
-                $floor = Floor::where("building_id", $userBuilding->building->id)->count();
-            }
+        if ($user->role == "operator_cctv") {
+            $buildings = 0;
+            $floors = 0;
+            $cctvs = UserCctv::where("user_id", $user->id)->count();
         }
 
         return view("pages.admin.index", compact("title", "buildings", "floors", "cctvs", "users", "buildingName", "user"));

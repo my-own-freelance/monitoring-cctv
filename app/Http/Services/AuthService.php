@@ -45,7 +45,7 @@ class AuthService
             $user->email = $request->email;
             $user->username = $request->username;
             $user->password = Hash::make($request->password);
-            $user->role = "operator_gedung";
+            $user->role = "operator_cctv";
             $user->is_active = "Y";
             $user->save();
 

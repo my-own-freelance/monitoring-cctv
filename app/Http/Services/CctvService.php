@@ -5,8 +5,7 @@ namespace App\Http\Services;
 use App\Models\Building;
 use App\Models\Cctv;
 use App\Models\Floor;
-use App\Models\UserBuilding;
-use Illuminate\Support\Facades\Storage;
+use App\Models\UserCctv;
 use Illuminate\Support\Facades\Validator;
 
 class CctvService
@@ -23,8 +22,7 @@ class CctvService
             $searchValue = $request->query("search")['value'];
             $query->where(function ($query) use ($searchValue) {
                 $query->where('name', 'like', '%' . $searchValue . '%')
-                    ->orWhere('url', 'like', '%' . $searchValue . '%')
-                    ->orWhere('description', 'like', '%' . $searchValue . '%');
+                    ->orWhere('url', 'like', '%' . $searchValue . '%');
             });
         }
 
@@ -44,19 +42,11 @@ class CctvService
             });
         }
 
-        // OPERATOR GEDUNG BISA LIHAT DATA SESUI GEDUNG DIA
+        // OPERATOR CCTV BISA LIHAT DATA SESUI CCTV DIA
         $user = auth()->user();
-        if ($user->role == "operator_gedung") {
-            $userBuilding = UserBuilding::where('user_id', $user->id)->first();
-            if (!$userBuilding) {
-                return response()->json([
-                    'draw' => $request->query('draw'),
-                    'recordsFiltered' => 0,
-                    'recordsTotal' => 0,
-                    'data' => [],
-                ]);
-            }
-            $query->where("building_id", $userBuilding->building_id);
+        if ($user->role == "operator_cctv") {
+            $userCctv = UserCctv::where('user_id', $user->id)->pluck("cctv_id");
+            $query->whereIn("id", $userCctv);
         }
 
         $recordsFiltered = $query->count();
@@ -71,7 +61,7 @@ class CctvService
 
             // SUPERADMIN BISA LIHAT SEMUA DATA DAN KELOLA DATA
             // OPERATOR HANYA BISA LIHAT SEMUA DATA
-            // OPERATOR GEDUNG BISA LIHAT DATA SESUI GEDUNG DIA
+            // OPERATOR CCTV BISA LIHAT DATA SESUI CCTV DIA
             $user = auth()->user();
             if ($user->role == "superadmin") {
                 $action = "<div class='dropdown-primary dropdown open'>
@@ -85,13 +75,6 @@ class CctvService
                             </div>";
             }
 
-            $image = '<div class="thumbnail">
-                        <div class="thumb">
-                            <img src="' . Storage::url($item->image) . '" width="200px" height="200px" 
-                            class="img-fluid img-thumbnail" alt="' . $item->name . '">
-                        </div>
-                    </div>';
-
             $area = '<small>
                         <strong>Gedung</strong> : ' . $item->building->name . '
                         <br>
@@ -100,8 +83,6 @@ class CctvService
                         <strong>Url CCTV </strong>: ' . $item->url . '
                     </small>';
             $item['action'] = $action;
-            $item['mobile_image'] = url("/") . Storage::url($item->image);
-            $item['image'] = $image;
             $item['area'] = $area;
             return $item;
         });
@@ -127,8 +108,6 @@ class CctvService
                 ], 404);
             }
 
-            $cctv["image_mobile"] = url("/") . Storage::url($cctv->image);
-
             return response()->json([
                 "status" => "success",
                 "data" => $cctv
@@ -148,8 +127,6 @@ class CctvService
             $rules = [
                 "name" => "required|string",
                 "url" => "required|string",
-                "description" => "required|string",
-                "image" => "required|image|max:1024|mimes:giv,svg,jpeg,png,jpg",
                 "building_id" => "required|integer",
                 "floor_id" => "required|integer",
             ];
@@ -157,11 +134,6 @@ class CctvService
             $messages = [
                 "name.required" => "Nama CCTV harus diisi",
                 "url.required" => "Url CCTV harus diisi",
-                "description.required" => "Deskripsi harus diisi",
-                "image.required" => "Gambar harus di isi",
-                "image.image" => "Gambar yang di upload tidak valid",
-                "image.max" => "Ukuran gambar maximal 1MB",
-                "image.mimes" => "Format gambar harus giv/svg/jpeg/png/jpg",
                 "building_id.required" => "Data Gedung harus diisi",
                 "building_id.integer" => "Data Gedung tidak valid",
                 "floor_id.required" => "Data Lantai harus diisi",
@@ -196,19 +168,12 @@ class CctvService
                 ], 404);
             }
 
-            if ($request->file('image')) {
-                $data['image'] = $request->file('image')->store('assets/cctv', 'public');
-            }
-
             Cctv::create($data);
             return response()->json([
                 "status" => "success",
                 "message" => "Data berhasil dibuat"
             ]);
         } catch (\Exception $err) {
-            if ($request->file("image")) {
-                unlink(public_path("storage/assets/cctv/" . $request->image->hashName()));
-            }
             return response()->json([
                 "status" => "error",
                 "message" => $err->getMessage(),
@@ -223,24 +188,14 @@ class CctvService
             $rules = [
                 "id" => "required|integer",
                 "name" => "required|string",
-                "description" => "required|string",
-                "image" => "nullable",
                 "building_id" => "required|integer",
                 "floor_id" => "required|integer",
             ];
-
-            if ($request->file('image')) {
-                $rules['image'] .= '|image|max:1024|mimes:giv,svg,jpeg,png,jpg';
-            }
 
             $messages = [
                 "id.required" => "Data ID harus diisi",
                 "id.integer" => "Type ID tidak sesuai",
                 "name.required" => "Nama CCTV harus diisi",
-                "description.required" => "Deskripsi harus diisi",
-                "image.image" => "Gambar yang di upload tidak valid",
-                "image.max" => "Ukuran gambar maximal 1MB",
-                "image.mimes" => "Format gambar harus giv/svg/jpeg/png/jpg",
                 "building_id.required" => "Data Gedung harus diisi",
                 "building_id.integer" => "Data Gedung tidak valid",
                 "floor_id.required" => "Data Lantai harus diisi",
@@ -284,25 +239,12 @@ class CctvService
                 ], 404);
             }
 
-            // delete undefined data image
-            unset($data["image"]);
-            if ($request->file("image")) {
-                $oldImagePath = "public/" . $cctv->image;
-                if (Storage::exists($oldImagePath)) {
-                    Storage::delete($oldImagePath);
-                }
-                $data["image"] = $request->file("image")->store("assets/cctv", "public");
-            }
-
             $cctv->update($data);
             return response()->json([
                 "status" => "success",
                 "message" => "Data berhasil diperbarui"
             ]);
         } catch (\Exception $err) {
-            if ($request->file("image")) {
-                unlink(public_path("storage/assets/cctv/" . $request->image->hashName()));
-            }
             return response()->json([
                 "status" => "error",
                 "message" => $err->getMessage(),
@@ -333,11 +275,11 @@ class CctvService
                     "message" => "Data tidak ditemukan"
                 ], 404);
             }
-            // USING FOST DELETE, IMAGE TIDAK UDAH DI HAPUS
-            // $oldImagePath = "public/" . $cctv->image;
-            // if (Storage::exists($oldImagePath)) {
-            //     Storage::delete($oldImagePath);
-            // }
+
+            $userCctv = UserCctv::where("cctv_id", $cctv->id)->first();
+            if ($userCctv) {
+                $userCctv->delete();
+            }
 
             $cctv->delete();
             return response()->json([

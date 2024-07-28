@@ -15,7 +15,7 @@
                             <button class="btn btn-mini btn-primary" onclick="return addData();">Tambah Data</button>
                         @endif
                     </div>
-                    @if ($user->role != 'operator_gedung')
+                    @if ($user->role != 'operator_cctv')
                         <form class="navbar-left navbar-form mr-md-1 mt-3" id="formFilter">
                             <div class="row">
                                 <div class="col-md-3">
@@ -45,28 +45,6 @@
                                 </div>
                             </div>
                         </form>
-                    @else
-                        {{-- operator gedung hanya bisa melakukan filter berdasarkan lantai  --}}
-                        <form class="navbar-left navbar-form mr-md-1 mt-3" id="formFilter">
-                            <div class="row">
-                                <div class="col-md-2">
-                                    <div class="form-group">
-                                        <label for="fFloor">Filter Lantai</label>
-                                        <select class="form-control" id="fFloor" name="fFloor">
-                                            <option value="">All</option>
-                                            @foreach ($floors as $floor)
-                                                <option value = "{{ $floor->id }}">{{ $floor->name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="pt-3">
-                                        <button class="mt-4 btn btn-sm btn-success mr-3" type="submit">Submit</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
                     @endif
                 </div>
                 <div class="card-block">
@@ -76,9 +54,9 @@
                                 <tr>
                                     <th class="all">#</th>
                                     <th class="all">Nama CCTV</th>
-                                    <th class="all">Detail CCTV</th>
-                                    <th class="all">Deskripsi</th>
-                                    <th class="all">Gambar</th>
+                                    <th class="all">Area Gedung</th>
+                                    <th class="all">Area Lantai</th>
+                                    <th class="all">Url Cctv</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -133,16 +111,6 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="image">Foto CCTV</label>
-                            <input class="form-control" id="image" type="file" name="image"
-                                placeholder="upload gambar" />
-                            <small class="text-danger">Max ukuran 1MB</small>
-                        </div>
-                        <div class="form-group">
-                            <label for="description">Dekripsi</label>
-                            <div id="summernote" name="description"></div>
-                        </div>
-                        <div class="form-group">
                             <button class="btn btn-sm btn-primary" type="submit" id="submit">
                                 <i class="ti-save"></i><span>Simpan</span>
                             </button>
@@ -158,16 +126,13 @@
 @endsection
 @push('scripts')
     <script src="{{ asset('dashboard/js/plugin/datatables/datatables.min.js') }}"></script>
-    <script src="{{ asset('dashboard/js/plugin/summernote/summernote-bs4.min.js') }}"></script>
+    <script src="{{ asset('dashboard/js/plugin/select2/select2.full.min.js') }}"></script>
     <script>
-        $('#summernote').summernote({
-            placeholder: 'masukkan deskripsi',
-            fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New'],
-            tabsize: 2,
-            height: 300
-        });
-
         let dTable = null;
+
+        $('#fBuilding,#fFloor,#building_id,#floor_id').select2({
+            theme: "bootstrap"
+        });
 
         $(function() {
             dataTable();
@@ -193,18 +158,12 @@
                 }, {
                     data: "name"
                 }, {
-                    data: "area"
+                    data: "building.name"
                 }, {
-                    data: "description",
-                    "render": function(data, type, row, meta) {
-                        if (type === 'display') {
-                            return `<div class="wrap-text">${data}</div>`;
-                        }
-                        return data;
-                    }
+                    data: "floor.name"
                 }, {
-                    data: "image"
-                }, ],
+                    data: "url"
+                }],
                 pageLength: 10,
             });
         }
@@ -224,7 +183,6 @@
 
         function refreshData() {
             dTable.ajax.reload(null, false);
-            $("#summernote").summernote('code', "");
         }
 
 
@@ -238,7 +196,6 @@
             $("#formEditable").slideUp(200, function() {
                 $("#boxTable").removeClass("col-md-8").addClass("col-md-12");
                 $("#reset").click();
-                $("#summernote").summernote('code', "");
             })
         }
 
@@ -255,7 +212,6 @@
                         $("#name").val(d.name);
                         $("#url").val(d.url);
                         $("#building_id").val(d.building_id).change();
-                        $("#summernote").summernote('code', d.description);
 
                         // ambil data lantai gedung
                         getFloorList(d.building_id, d.floor_id)
@@ -277,8 +233,6 @@
             formData.append("url", $("#url").val());
             formData.append("building_id", parseInt($("#building_id").val()));
             formData.append("floor_id", parseInt($("#floor_id").val()));
-            formData.append("description", $("#summernote").summernote('code'));
-            formData.append("image", document.getElementById("image").files[0]);
 
             saveData(formData, $("#formEditable").attr("data-action"));
             return false;

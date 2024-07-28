@@ -22,7 +22,6 @@
                                 <tr>
                                     <th class="all">#</th>
                                     <th class="all">Nama Gedung</th>
-                                    <th class="all">Deskripsi</th>
                                     <th class="all">Gambar</th>
                                 </tr>
                             </thead>
@@ -63,10 +62,6 @@
                             <small class="text-danger">Max ukuran 1MB</small>
                         </div>
                         <div class="form-group">
-                            <label for="description">Dekripsi</label>
-                            <div id="summernote" name="description"></div>
-                        </div>
-                        <div class="form-group">
                             <button class="btn btn-sm btn-primary" type="submit" id="submit">
                                 <i class="ti-save"></i><span>Simpan</span>
                             </button>
@@ -82,14 +77,7 @@
 @endsection
 @push('scripts')
     <script src="{{ asset('dashboard/js/plugin/datatables/datatables.min.js') }}"></script>
-    <script src="{{ asset('dashboard/js/plugin/summernote/summernote-bs4.min.js') }}"></script>
     <script>
-        $('#summernote').summernote({
-            placeholder: 'masukkan deskripsi',
-            fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New'],
-            tabsize: 2,
-            height: 300
-        });
 
         let dTable = null;
 
@@ -115,15 +103,6 @@
                 }, {
                     data: "name"
                 }, {
-                    data: "description",
-                    data: "description",
-                    "render": function(data, type, row, meta) {
-                        if (type === 'display') {
-                            return `<div class="wrap-text">${data}</div>`;
-                        }
-                        return data;
-                    }
-                }, {
                     data: "image"
                 }, ],
                 pageLength: 10,
@@ -132,7 +111,6 @@
 
         function refreshData() {
             dTable.ajax.reload(null, false);
-            $("#summernote").summernote('code', "");
         }
 
 
@@ -146,7 +124,6 @@
             $("#formEditable").slideUp(200, function() {
                 $("#boxTable").removeClass("col-md-8").addClass("col-md-12");
                 $("#reset").click();
-                $("#summernote").summernote('code', "");
             })
         }
 
@@ -161,7 +138,6 @@
                         let d = res.data;
                         $("#id").val(d.id);
                         $("#name").val(d.name);
-                        $("#summernote").summernote('code', d.description);
                     })
                 },
                 error: function(err) {
@@ -177,7 +153,6 @@
             let formData = new FormData();
             formData.append("id", parseInt($("#id").val()));
             formData.append("name", $("#name").val());
-            formData.append("description", $("#summernote").summernote('code'));
             formData.append("image", document.getElementById("image").files[0]);
 
             saveData(formData, $("#formEditable").attr("data-action"));

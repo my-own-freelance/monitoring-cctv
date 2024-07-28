@@ -10,7 +10,7 @@ class Cctv extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ["name", "url", "description", "image", "building_id", "floor_id"];
+    protected $fillable = ["name", "url", "building_id", "floor_id"];
 
     public function building()
     {
@@ -20,5 +20,10 @@ class Cctv extends Model
     public function floor()
     {
         return $this->belongsTo(Floor::class);
+    }
+
+    public function userCctv()
+    {
+        return $this->hasMany(UserCctv::class);
     }
 }

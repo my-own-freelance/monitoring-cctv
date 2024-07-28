@@ -10,20 +10,10 @@ class Building extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ["name", "description", "image"];
+    protected $fillable = ["name", "image"];
 
     public function floors()
     {
         return $this->hasMany(Floor::class);
-    }
-
-    public function cctvs()
-    {
-        return $this->hasMany(Cctv::class);
-    }
-
-    public function userBuildings()
-    {
-        return $this->hasMany(UserBuilding::class);
     }
 }

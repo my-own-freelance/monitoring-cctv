@@ -2,12 +2,9 @@
 
 namespace App\Http\Services;
 
-use App\Models\Building;
-use App\Models\Floor;
 use App\Models\User;
-use App\Models\UserBuilding;
+use App\Models\UserCctv;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class UserService
@@ -32,11 +29,6 @@ class UserService
             });
         }
 
-        // filter building_id
-        if ($request->query("building_id") && $request->query('building_id') != "") {
-            $userBuilding = UserBuilding::where("building_id", $request->query("building_id"))->pluck('user_id');
-            $query->whereIn("id", $userBuilding);
-        }
 
         $recordsFiltered = $query->count();
 
@@ -52,12 +44,14 @@ class UserService
             $user = auth()->user();
             if ($user->role == "superadmin") {
                 $action_delete = $user->id != $item->id ? "<a class='dropdown-item' onclick='return removeData(\"{$item->id}\");' href='javascript:void(0)' title='Hapus'>Hapus</a>" : "";
+                $action_add_cctv = $item->role == "operator_cctv" ? "<a class='dropdown-item' onclick='return addCctv(\"{$item->id}\");' href='javascript:void(0)' title='Tambah CCTV'>Atur CCTC</a>" : "";
                 $action = "<div class='dropdown-primary dropdown open'>
                                 <button class='btn btn-sm btn-primary dropdown-toggle waves-effect waves-light' id='dropdown-{$item->id}' data-toggle='dropdown' aria-haspopup='true' aria-expanded='true'>
                                     Aksi
                                 </button>
                                 <div class='dropdown-menu' aria-labelledby='dropdown-{$item->id}' data-dropdown-out='fadeOut'>
                                     <a class='dropdown-item' onclick='return getData(\"{$item->id}\");' href='javascript:void(0);' title='Edit'>Edit</a>
+                                    " . $action_add_cctv . "
                                     " . $action_delete . "
                                 </div>
                             </div>";
@@ -68,16 +62,8 @@ class UserService
                 $role = "Super Admin";
             } else if ($item->role == "operator") {
                 $role = "Operator";
-            } else if ($item->role == "operator_gedung") {
-                $role = "Operator Gedung";
-            }
-
-            $building = "-";
-            if ($item->role == "operator_gedung") {
-                $userBuilding = UserBuilding::with("building")->where("user_id", $item->id)->first();
-                if ($userBuilding) {
-                    $building = $userBuilding->building->name;
-                }
+            } else if ($item->role == "operator_cctv") {
+                $role = "Operator CCTV";
             }
 
             $is_active = $item->is_active == 'Y' ? '
@@ -101,18 +87,9 @@ class UserService
                     </div>
                 </div>';
 
-            $account = '<small>
-                            <strong>Username</strong> : ' . $item->username . '
-                            <br>
-                            <strong>Email</strong> : ' . $item->email . '
-                            <br>
-                        </small>';
-
             $item['action'] = $action;
             $item['role'] = $role;
-            $item['building_access'] = $building;
             $item['is_active'] = $is_active;
-            $item['account'] = $account;
 
             return $item;
         });
@@ -138,13 +115,6 @@ class UserService
                 ], 404);
             }
 
-            if ($user->role == "operator_gedung") {
-                $userBuilding = UserBuilding::with("building")->where("user_id", $user->id)->first();
-                if ($userBuilding) {
-                    $user["building_id"] = $userBuilding->building->id;
-                }
-            }
-
             return response()->json([
                 "status" => "success",
                 "data" => $user
@@ -165,7 +135,7 @@ class UserService
                 "username" => "required|string|unique:users",
                 "email" => "required|string|email|unique:users",
                 "password" => "required|string|min:5",
-                "role" => "required|string|in:superadmin,operator,operator_gedung",
+                "role" => "required|string|in:superadmin,operator,operator_cctv",
                 "is_active" => "required|string|in:Y,N",
             ];
 
@@ -184,30 +154,12 @@ class UserService
                 "is_active.in" => "Status tidak sesuai",
             ];
 
-            if ($request['role'] == "operator_gedung") {
-                $rules['building_id'] = "required|integer";
-                $messages['building_id.required'] = "Gedung harus diisi";
-                $messages['building_id.integer'] = "Gedung tidak valid";
-            }
-
             $validator = Validator::make($request->all(), $rules, $messages);
             if ($validator->fails()) {
                 return response()->json([
                     "status" => "error",
                     "message" => $validator->errors()->first(),
                 ], 400);
-            }
-
-            $building = null;
-            if ($request->role == "operator_gedung") {
-                // cek building untuk role operator gedung
-                $building = Building::find($request->building_id);
-                if (!$building) {
-                    return response()->json([
-                        "status" => "error",
-                        "message" => "Data Gedung tidak ditemukan"
-                    ], 404);
-                }
             }
 
             $user = new User();
@@ -218,15 +170,6 @@ class UserService
             $user->role = $request->role;
             $user->is_active = $request->is_active;
             $user->save();
-
-            if ($request->role == "operator_gedung") {
-                // buat user building untuk role operator gedung
-                $data = [
-                    "user_id" => $user->id,
-                    "building_id" => $building->id
-                ];
-                UserBuilding::create($data);
-            }
 
             return response()->json([
                 "status" => "success",
@@ -249,7 +192,7 @@ class UserService
                 "name" => "required|string",
                 "email" => "required|string|email",
                 "password" => "nullable",
-                "role" => "required|string|in:superadmin,operator,operator_gedung",
+                "role" => "required|string|in:superadmin,operator,operator_cctv",
                 "is_active" => "required|string|in:Y,N",
             ];
             if ($data && $data['password'] != "") {
@@ -269,11 +212,6 @@ class UserService
                 "is_active.in" => "Status tidak sesuai",
             ];
 
-            if ($request['role'] == "operator_gedung") {
-                $rules['building_id'] = "required|integer";
-                $messages['building_id.required'] = "Gedung harus diisi";
-                $messages['building_id.integer'] = "Gedung tidak valid";
-            }
 
             $validator = Validator::make($data, $rules, $messages);
             if ($validator->fails()) {
@@ -310,36 +248,6 @@ class UserService
                     "status" => "error",
                     "message" => "Email sudah digunakan"
                 ], 404);
-            }
-
-            $building = null;
-            if ($request->role == "operator_gedung") {
-                // cek building untuk role operator gedung
-                $building = Building::find($data["building_id"]);
-                if (!$building) {
-                    return response()->json([
-                        "status" => "error",
-                        "message" => "Data Gedung tidak ditemukan"
-                    ], 404);
-                }
-
-                $dataUserBuilding = [
-                    "user_id" => $user->id,
-                    "building_id" => $building->id
-                ];
-                // jika belum punya building. buat building baru
-                // jika sudah pernah punya building. dan di set ke building baru, update saja data building lama
-                $existingUserBuilding = UserBuilding::where("user_id", $user->id)->first();
-                if (!$existingUserBuilding) {
-                    UserBuilding::create($dataUserBuilding);
-                } else if ($existingUserBuilding->building_id != $data["building_id"]) {
-                    $existingUserBuilding->update($dataUserBuilding);
-                }
-            }
-
-            // case jika role awal == operator gedung kemudian diubah jadi non operator gedung. hapus data user building
-            if ($user->role == "operator_gedung" && $data["role"] != "operator_gedung") {
-                UserBuilding::where("user_id", $user->id)->delete();
             }
 
             $user->update($data);
@@ -379,15 +287,10 @@ class UserService
                     "message" => "Data tidak ditemukan"
                 ], 404);
             }
-            // USING FOST DELETE, IMAGE TIDAK UDAH DI HAPUS
-            // $oldImagePath = "public/" . $user->image;
-            // if (Storage::exists($oldImagePath)) {
-            //     Storage::delete($oldImagePath);
-            // }
 
-            $userBuilding = UserBuilding::where("user_id", $user->id)->first();
-            if ($userBuilding) {
-                $userBuilding->delete();
+            $userCctv = UserCctv::where("user_id", $user->id)->first();
+            if ($userCctv) {
+                $userCctv->delete();
             }
 
             $user->delete();

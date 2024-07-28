@@ -21,7 +21,7 @@ class WebUserController extends Controller
         $title = "Data Pengguna";
         $buildings = Building::all();
         $user = Auth()->user();
-        if ($user->role == "operator_gedung") {
+        if ($user->role == "operator_cctv") {
             return redirect()->route("dashboard");
         }
         return view("pages.admin.user", compact('title', 'buildings', 'user'));

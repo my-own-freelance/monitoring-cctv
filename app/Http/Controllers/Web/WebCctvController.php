@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Services\CctvService;
 use App\Models\Building;
 use App\Models\Floor;
-use App\Models\UserBuilding;
 use Illuminate\Http\Request;
 
 class WebCctvController extends Controller
@@ -25,16 +24,9 @@ class WebCctvController extends Controller
         $floors = Floor::all();
         $user = Auth()->user();
 
-        // UNTUK KEBUTUHAN FILTER DATA TABEL KETIKA DI AKSES OLEH OPERATOR GEDUNG
-        if ($user->role == "operator_gedung") {
-            $userBuilding = UserBuilding::where("user_id", $user->id)->first();
-            if (!$userBuilding) {
-                $buildings = [];
-                $floors = [];
-            } else {
-                $buildings = Building::where("id", $userBuilding->building_id)->get();
-                $floors = Floor::where("building_id", $userBuilding->building_id)->get();
-            }
+        if ($user->role == "operator_cctv") {
+            $buildings = [];
+            $floors = [];
         }
         return view("pages.admin.cctv", compact('title', 'buildings', 'floors', 'user'));
     }

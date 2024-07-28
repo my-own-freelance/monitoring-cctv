@@ -15,20 +15,9 @@
                         <button class="btn btn-mini btn-info mr-1" onclick="return refreshData();">Refresh</button>
                         <button class="btn btn-mini btn-primary" onclick="return addData();">Tambah</button>
                     </div>
-                    @if ($user->role != 'operator_gedung')
+                    @if ($user->role != 'operator_cctv')
                         <form class="navbar-left navbar-form mr-md-1 mt-3" id="formFilter">
                             <div class="row">
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="fBuilding">Filter Gedung</label>
-                                        <select class="form-control" id="fBuilding" name="fBuilding">
-                                            <option value="">All</option>
-                                            @foreach ($buildings as $building)
-                                                <option value = "{{ $building->id }}">{{ $building->name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label for="fRole">Filter Level</label>
@@ -36,7 +25,7 @@
                                             <option value="">All</option>
                                             <option value="superadmin">Super Admin</option>
                                             <option value="operator">Operator</option>
-                                            <option value="operator_gedung">Operator Gedung</option>
+                                            <option value="operator_cctv">Operator CCTV</option>
                                         </select>
                                     </div>
                                 </div>
@@ -57,8 +46,8 @@
                                     <th class="all">#</th>
                                     <th class="all">Nama Pengguna</th>
                                     <th class="all">Akun</th>
+                                    <th class="all">Email</th>
                                     <th class="all">Level</th>
-                                    <th class="all">Akses</th>
                                     <th class="all">Status</th>
                                 </tr>
                             </thead>
@@ -122,16 +111,7 @@
                                 <option value="">Pilih Level</option>
                                 <option value="superadmin">Supera Admin</option>
                                 <option value="operator">Operator</option>
-                                <option value="operator_gedung">Operator Gedung</option>
-                            </select>
-                        </div>
-                        <div class="form-group" id="divBuilding" style="display: none">
-                            <label for="building_id">Gedung</label>
-                            <select class="form-control form-control" id="building_id" name="building_id">
-                                <option value="">Pilih Gedung</option>
-                                @foreach ($buildings as $building)
-                                    <option value="<?= $building->id ?>"><?= $building->name ?></option>
-                                @endforeach
+                                <option value="operator_cctv">Operator CCTV</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -177,11 +157,11 @@
                 }, {
                     data: "name"
                 }, {
-                    data: "account"
+                    data: "username"
+                }, {
+                    data: "email"
                 }, {
                     data: "role"
-                }, {
-                    data: "building_access"
                 }, {
                     data: "is_active"
                 }],
@@ -192,7 +172,6 @@
         $('#formFilter').submit(function(e) {
             e.preventDefault()
             let dataFilter = {
-                building_id: $("#fBuilding").val(),
                 role: $("#fRole").val(),
             }
 
@@ -238,13 +217,6 @@
                         $("#password").val(d.password);
                         $("#role").val(d.role);
                         $("#is_active").val(d.is_active);
-
-                        if (d.role == "operator_gedung") {
-                            $("#divBuilding").fadeIn()
-                            $("#building_id").val(d.building_id).change();
-                        } else {
-                            $("#divBuilding").slideUp()
-                        }
                     })
                 },
                 error: function(err) {
@@ -265,9 +237,6 @@
             formData.append("password", $("#password").val());
             formData.append("role", $("#role").val());
             formData.append("is_active", $("#is_active").val());
-            if ($("#role").val() == "operator_gedung") {
-                formData.append("building_id", parseInt($("#building_id").val()));
-            }
 
             saveData(formData, $("#formEditable").attr("data-action"));
             return false;
@@ -352,15 +321,5 @@
                 }
             })
         }
-
-        $("#role").change(function() {
-            let role = $(this).val();
-
-            if (role == "operator_gedung") {
-                $("#divBuilding").fadeIn()
-            } else {
-                $("#divBuilding").slideUp()
-            }
-        })
     </script>
 @endpush

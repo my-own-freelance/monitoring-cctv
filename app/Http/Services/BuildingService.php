@@ -3,7 +3,6 @@
 namespace App\Http\Services;
 
 use App\Models\Building;
-use App\Models\UserBuilding;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -16,24 +15,19 @@ class BuildingService
         if ($request->query("search")) {
             $searchValue = $request->query("search")['value'];
             $query->where(function ($query) use ($searchValue) {
-                $query->where('name', 'like', '%' . $searchValue . '%')
-                    ->orWhere('description', 'like', '%' . $searchValue . '%');
+                $query->where('name', 'like', '%' . $searchValue . '%');
             });
         }
 
-        // OPERATOR GEDUNG BISA LIHAT DATA SESUI GEDUNG DIA
+        // OPERATOR CCTV TIDAK BISA MELIHAT DATA
         $user = auth()->user();
-        if ($user->role == "operator_gedung") {
-            $userBuilding = UserBuilding::where('user_id', $user->id)->first();
-            if (!$userBuilding) {
-                return response()->json([
-                    'draw' => $request->query('draw'),
-                    'recordsFiltered' => 0,
-                    'recordsTotal' => 0,
-                    'data' => [],
-                ]);
-            }
-            $query->where("id", $userBuilding->building_id);
+        if ($user->role == "operator_cctv") {
+            return response()->json([
+                'draw' => $request->query('draw'),
+                'recordsFiltered' => 0,
+                'recordsTotal' => 0,
+                'data' => [],
+            ]);
         }
 
         $recordsFiltered = $query->count();
@@ -48,7 +42,7 @@ class BuildingService
 
             // SUPERADMIN BISA LIHAT SEMUA DATA DAN KELOLA DATA
             // OPERATOR HANYA BISA LIHAT SEMUA DATA
-            // OPERATOR GEDUNG BISA LIHAT DATA SESUI GEDUNG DIA
+            // OPERATOR CCTV TIDAK BISA MEMLIHAT DATA
             $user = auth()->user();
             if ($user->role == "superadmin") {
                 $action = "<div class='dropdown-primary dropdown open'>
@@ -64,7 +58,7 @@ class BuildingService
 
             $image = '<div class="thumbnail">
                         <div class="thumb">
-                            <img src="' . Storage::url($item->image) . '" width="200px" height="200px" 
+                            <img src="' . Storage::url($item->image) . '" width="100px" height="100px" 
                             class="img-fluid img-thumbnail" alt="' . $item->name . '">
                         </div>
                     </div>';
@@ -116,13 +110,11 @@ class BuildingService
             $data = $request->all();
             $rules = [
                 "name" => "required|string",
-                "description" => "required|string",
                 "image" => "required|image|max:1024|mimes:giv,svg,jpeg,png,jpg"
             ];
 
             $messages = [
                 "name.required" => "Nama Gedung harus diisi",
-                "description.required" => "Deskripsi harus diisi",
                 "image.required" => "Gambar harus di isi",
                 "image.image" => "Gambar yang di upload tidak valid",
                 "image.max" => "Ukuran gambar maximal 1MB",
@@ -164,7 +156,6 @@ class BuildingService
             $rules = [
                 "id" => "required|integer",
                 "name" => "required|string",
-                "description" => "required|string",
                 "image" => "nullable"
             ];
 
@@ -176,7 +167,6 @@ class BuildingService
                 "id.required" => "Data ID harus diisi",
                 "id.integer" => "Type ID tidak sesuai",
                 "name.required" => "Nama Gedung harus diisi",
-                "description.required" => "Deskripsi harus diisi",
                 "image.image" => "Gambar yang di upload tidak valid",
                 "image.max" => "Ukuran gambar maximal 1MB",
                 "image.mimes" => "Format gambar harus giv/svg/jpeg/png/jpg"

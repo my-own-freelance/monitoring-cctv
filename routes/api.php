@@ -83,6 +83,7 @@ Route::group(["middleware" => ["api", "auth:api"]], function () {
 
         // akses operator & operator cctv
         Route::get("datatable", [ApiCctvController::class, "dataTable"]);
+        Route::get("/list", [ApiFloorController::class, "list"]);
         Route::get("{id}/detail", [ApiCctvController::class, "getDetail"]);
     });
 
@@ -108,10 +109,12 @@ Route::group(["middleware" => ["api", "auth:api"]], function () {
     });
 
     // User CCTV - only oprator cctv
-    Route::group(["middleware" => "check.role:operator_cctv", "prefix" => "user-cctv"], function () {
-        Route::post("/create", [ApiUserCctvController::class, "create"]);
+    Route::group(["prefix" => "user-cctv"], function () {
+        Route::middleware("check.role:superadmin")->group(function () {
+            Route::post("/create", [ApiUserCctvController::class, "create"]);
+            Route::delete("/delete", [ApiUserCctvController::class, "destroy"]);
+        });
         Route::get("/datatable", [ApiUserCctvController::class, "dataTable"]);
-        Route::delete("/delete", [ApiUserCctvController::class, "destroy"]);
     });
 });
 
@@ -163,6 +166,7 @@ Route::prefix("admin")->namespace("admin")->middleware(["check.auth"])->group(fu
 
         // akses operator & operator cctv
         Route::get("/datatable", [WebCctvController::class, "dataTable"]);
+        Route::get("/list", [WebCctvController::class, "list"]);
         Route::get("/{id}/detail", [WebCctvController::class, "getDetail"]);
     });
 
@@ -189,9 +193,11 @@ Route::prefix("admin")->namespace("admin")->middleware(["check.auth"])->group(fu
     });
 
     // User CCTV - only oprator cctv
-    Route::group(["middleware" => "check.role:operator_cctv", "prefix" => "user-cctv"], function () {
-        Route::post("/create", [WebUserCctvController::class, "create"]);
+    Route::group(["prefix" => "user-cctv"], function () {
+        Route::middleware("check.role:superadmin")->group(function () {
+            Route::post("/create", [WebUserCctvController::class, "create"]);
+            Route::delete("/delete", [WebUserCctvController::class, "destroy"]);
+        });
         Route::get("/datatable", [WebUserCctvController::class, "dataTable"]);
-        Route::delete("/delete", [WebUserCctvController::class, "destroy"]);
     });
 });

@@ -56,4 +56,9 @@ class WebCctvController extends Controller
     {
         return $this->cctvService->destroy($request);
     }
+
+    public function list(Request $request)
+    {
+        return $this->cctvService->list($request);
+    }
 }

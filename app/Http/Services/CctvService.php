@@ -293,4 +293,33 @@ class CctvService
             ], 500);
         }
     }
+
+    public function list($request)
+    {
+        try {
+            $query = Cctv::with(["floor" => function ($query) {
+                $query->select("id", "name");
+            }]);
+
+            // jika tidak di filter by floor id, limit 100 data saja yg ditampilkan secara random
+            if ($request->has("floor_id")) {
+                $floor_id = $request->query("floor_id");
+                $query->where('floor_id', $floor_id);
+            } else {
+                $query->limit(100);
+            }
+
+            $data = $query->get();
+            return response()->json([
+                "status" => "success",
+                "data" => $data,
+                "id" => $request->query("floor_id")
+            ]);
+        } catch (\Exception $err) {
+            return response()->json([
+                "status" => "error",
+                "message" => $err->getMessage()
+            ], 500);
+        }
+    }
 }

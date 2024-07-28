@@ -10,21 +10,40 @@ class UserCctvService
 {
     public function dataTable($request)
     {
-        $query = UserCctv::with(["cctv" => function ($query) {
-            $query::with(["building" => function ($query) {
-                $query->select("id", "name");
-            }])->select("id", "name");
-        }]);
+        $query = UserCctv::with(['cctv' => function ($query) {
+            $query->select('id', 'name', 'floor_id', 'building_id')->with(['floor' => function ($query) {
+                $query->select('id', 'name', 'building_id')->with(['building' => function ($query) {
+                    $query->select('id', 'name');
+                }]);
+            }]);
+        }])->select('id', 'user_id', 'cctv_id');
 
         // HANYA OPERATOR CCTV YG BISA MELIHAT DATA
         $user = auth()->user();
-        if ($user->role != "operator_cctv") {
+        if ($user->role == "operator_cctv") {
             return response()->json([
                 'draw' => $request->query('draw'),
                 'recordsFiltered' => 0,
                 'recordsTotal' => 0,
                 'data' => [],
             ]);
+        }
+
+
+        // filter user_id
+        if ($request->query("user_id") && $request->query('user_id') != "") {
+            $user_id = $request->query("user_id");
+            $query->where(function ($query) use ($user_id) {
+                $query->where('user_id', $user_id);
+            });
+        }
+
+        // filter floor_id
+        if ($request->query("floor_id") && $request->query('floor_id') != "") {
+            $floor_id = $request->query("floor_id");
+            $query->where(function ($query) use ($floor_id) {
+                $query->where('floor_id', $floor_id);
+            });
         }
 
         $recordsFiltered = $query->count();
@@ -37,13 +56,13 @@ class UserCctvService
         $output = $data->map(function ($item) {
             $action = "";
             $user = auth()->user();
-            if ($user->role == "operator_cctv") {
+            if ($user->role == "superadmin") {
                 $action = "<div class='dropdown-primary dropdown open'>
                                 <button class='btn btn-sm btn-primary dropdown-toggle waves-effect waves-light' id='dropdown-{$item->id}' data-toggle='dropdown' aria-haspopup='true' aria-expanded='true'>
                                     Aksi
                                 </button>
                                 <div class='dropdown-menu' aria-labelledby='dropdown-{$item->id}' data-dropdown-out='fadeOut'>
-                                    <a class='dropdown-item' onclick='return removeData(\"{$item->id}\");' href='javascript:void(0)' title='Hapus'>Hapus</a>
+                                    <a class='dropdown-item' onclick='return removeDataUserCctv(\"{$item->id}\");' href='javascript:void(0)' title='Hapus'>Hapus</a>
                                 </div>
                             </div>";
             }
@@ -87,7 +106,7 @@ class UserCctvService
 
             // cek data cctv
             $existingCctv = Cctv::find($data["cctv_id"]);
-            if ($existingCctv) {
+            if (!$existingCctv) {
                 return response()->json([
                     "status" => "error",
                     "message" => "Data cctv tidak tersedia"

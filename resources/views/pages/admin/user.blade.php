@@ -61,6 +61,8 @@
                 </div>
             </div>
         </div>
+
+        {{-- form --}}
         <div class="col-md-4 col-sm-12" style="display: none" data-action="update" id="formEditable">
             <div class="card">
                 <div class="card-header">
@@ -126,12 +128,95 @@
                 </div>
             </div>
         </div>
+
+        {{-- form access cctv and list cctv of user cctv --}}
+        <div class="col-md-12" style="display: none" data-action="update" id="formUserCctv">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <h5>TAMBAH AKSES USER CCTV</h5>
+                    </div>
+                    <div class="card-header-right">
+                        <button class="btn btn-sm btn-warning" onclick="return closeForm(this)" id="btnCloseForm">
+                            <i class="ion-android-close"></i>
+                        </button>
+                    </div>
+                    <div class="mt-5">
+                        <form>
+                            <input class="form-control" id="user_id" type="hidden" name="user_id" />
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="building_id">Area Gedung</label>
+                                        <select class="form-control form-control" id="building_id" name="building_id">
+                                            <option value = "">Pilih Gedung</option>
+                                            @foreach ($buildings as $building)
+                                                <option value = "{{ $building->id }}">{{ $building->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="floor_id">Area Lantai</label>
+                                        <select class="form-control form-control" id="floor_id" name="floor_id">
+                                            <option value = "">Pilih Lantai</option>
+                                            {{-- request by api based on building area --}}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="cctv_id">Area CCTV</label>
+                                        <select class="form-control form-control" id="cctv_id" name="cctv_id">
+                                            <option value = "">Pilih Cctv</option>
+                                            {{-- request by api based on building area --}}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="pt-4">
+                                        <button class="mt-4 btn btn-sm btn-success mr-3" type="submit">Tambah
+                                            Akses</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-block">
+                    <div class="table-responsive mt-3">
+                        <table class="table table-striped table-bordered nowrap dataTable" id="userCctvDataTable">
+                            <thead>
+                                <tr>
+                                    <th class="all">#</th>
+                                    <th class="all">Area Gedung</th>
+                                    <th class="all">Area Lantai</th>
+                                    <th class="all">Nama CCTV</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="4" class="text-center"><small>Tidak Ada Data</small></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 @endsection
 @push('scripts')
     <script src="{{ asset('dashboard/js/plugin/datatables/datatables.min.js') }}"></script>
+    <script src="{{ asset('dashboard/js/plugin/select2/select2.full.min.js') }}"></script>
     <script>
         let dTable = null;
+        let dTableUserCctv = null;
+
+        $('#building_id,#floor_id,#cctv_id').select2({
+            theme: "bootstrap"
+        });
 
         $(function() {
             dataTable();
@@ -185,6 +270,11 @@
             dTable.ajax.reload(null, false);
         }
 
+        function refreshDataUserCctv() {
+            console.log("reload")
+            dTableUserCctv.ajax.reload(null, false);
+        }
+
         function addData() {
             $("#username").removeAttr("readonly");
             $("#formEditable").attr('data-action', 'add').fadeIn(200);
@@ -195,8 +285,9 @@
         function closeForm() {
             $("#username").removeAttr("readonly");
             $("#formEditable").slideUp(200, function() {
-                $("#boxTable").removeClass("col-md-8").addClass("col-md-12");
+                $("#boxTable").removeClass("col-md-8").addClass("col-md-12").fadeIn(200)
                 $("#reset").click();
+                $("#formUserCctv").slideUp(200)
             })
         }
 
@@ -320,6 +411,164 @@
                         ?.message);
                 }
             })
+        }
+
+        function addCctv(id) {
+            $("#formUserCctv").fadeIn(200, function() {
+                $("#boxTable").slideUp(200)
+                $("#user_id").val(id);
+            })
+            dataTableUserCctv(id);
+        }
+
+        function dataTableUserCctv(id) {
+            let url = `/api/admin/user-cctv/datatable?user_id=${id}`;
+
+            dTableUserCctv = $("#userCctvDataTable").DataTable({
+                searching: false,
+                orderng: true,
+                lengthChange: true,
+                responsive: true,
+                processing: true,
+                serverSide: true,
+                searchDelay: 1000,
+                paging: true,
+                lengthMenu: [5, 10, 25, 50, 100],
+                ajax: url,
+                columns: [{
+                    data: "action"
+                }, {
+                    data: "cctv.floor.building.name"
+                }, {
+                    data: "cctv.floor.name"
+                }, {
+                    data: "cctv.name"
+                }],
+                pageLength: 10,
+            });
+        }
+
+        $("#building_id").change(function() {
+            let building_id = $(this).val();
+            getFloorList(building_id);
+        })
+
+        function getFloorList(building_id) {
+            $.ajax({
+                url: `/api/admin/floor/list?building_id=${building_id}`,
+                method: "GET",
+                header: {
+                    "Content-Type": "application/json"
+                },
+                beforeSend: function() {
+                    console.log("Sending data...!")
+                },
+                success: function(res) {
+                    // update input form
+                    $("#floor_id").empty();
+                    $('#floor_id').append("<option value =''>Pilih Lantai</option > ");
+                    $.each(res.data, function(index, r) {
+                        $('#floor_id').append("<option value = '" + r.id + "' > " + r
+                            .name + " </option > ");
+                    })
+                },
+                error: function(err) {
+                    console.log("error :", err);
+                    showMessage("danger", "flaticon-error", "Peringatan", err.message || err
+                        .responseJSON
+                        ?.message);
+                }
+            })
+        }
+
+        $("#floor_id").change(function() {
+            let floor_id = $(this).val();
+            getCctvList(floor_id);
+        })
+
+        function getCctvList(cctv_id) {
+            $.ajax({
+                url: `/api/admin/cctv/list?cctv_id=${cctv_id}`,
+                method: "GET",
+                header: {
+                    "Content-Type": "application/json"
+                },
+                beforeSend: function() {
+                    console.log("Sending data...!")
+                },
+                success: function(res) {
+                    // update input form
+                    $("#cctv_id").empty();
+                    $('#cctv_id').append("<option value =''>Pilih Cctv</option > ");
+                    $.each(res.data, function(index, r) {
+                        $('#cctv_id').append("<option value = '" + r.id + "' > " + r
+                            .name + " </option > ");
+                    })
+                },
+                error: function(err) {
+                    console.log("error :", err);
+                    showMessage("danger", "flaticon-error", "Peringatan", err.message || err
+                        .responseJSON
+                        ?.message);
+                }
+            })
+        }
+
+        $("#formUserCctv form").submit(function(e) {
+            e.preventDefault();
+            let formData = new FormData();
+            formData.append("user_id", parseInt($("#user_id").val()));
+            formData.append("cctv_id", parseInt($("#cctv_id").val()));
+
+            saveDataUserCctv(formData, $("#formEditable").attr("data-action"));
+            return false;
+        });
+
+        function saveDataUserCctv(data, action) {
+            $.ajax({
+                url: "/api/admin/user-cctv/create",
+                contentType: false,
+                processData: false,
+                method: "POST",
+                data: data,
+                beforeSend: function() {
+                    console.log("Loading...")
+                },
+                success: function(res) {
+                    showMessage("success", "flaticon-alarm-1", "Sukses", res.message);
+                    refreshDataUserCctv();
+                },
+                error: function(err) {
+                    console.log("error :", err);
+                    showMessage("danger", "flaticon-error", "Peringatan", err.message || err.responseJSON
+                        ?.message);
+                }
+            })
+        }
+
+        function removeDataUserCctv(id) {
+            let c = confirm("Apakah anda yakin untuk menghapus data ini ?");
+            if (c) {
+                $.ajax({
+                    url: "/api/admin/user-cctv/delete",
+                    method: "DELETE",
+                    data: {
+                        id: id
+                    },
+                    beforeSend: function() {
+                        console.log("Loading...")
+                    },
+                    success: function(res) {
+                        refreshDataUserCctv();
+                        showMessage("success", "flaticon-alarm-1", "Sukses", res.message);
+                    },
+                    error: function(err) {
+                        console.log("error :", err);
+                        showMessage("danger", "flaticon-error", "Peringatan", err.message || err.responseJSON
+                            ?.message);
+                    }
+                })
+            }
         }
     </script>
 @endpush

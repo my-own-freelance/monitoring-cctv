@@ -3,6 +3,7 @@
 namespace App\Http\Services;
 
 use App\Models\Cctv;
+use App\Models\User;
 use App\Models\UserCctv;
 use Illuminate\Support\Facades\Validator;
 
@@ -18,9 +19,9 @@ class UserCctvService
             }]);
         }])->select('id', 'user_id', 'cctv_id');
 
-        // HANYA OPERATOR CCTV YG BISA MELIHAT DATA
+        // HANYA SUPERADMIN YG BISA MELIHAT DATA
         $user = auth()->user();
-        if ($user->role == "operator_cctv") {
+        if ($user->role != "superadmin") {
             return response()->json([
                 'draw' => $request->query('draw'),
                 'recordsFiltered' => 0,
@@ -102,6 +103,15 @@ class UserCctvService
                     "status" => "error",
                     "message" => $validator->errors()->first(),
                 ], 400);
+            }
+
+            // cek data user 
+            $existingUser = User::where("id", $data["user_id"])->where("role", "operator_cctv")->first();
+            if (!$existingUser) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "User tidak tersedia / tidak valid"
+                ], 404);
             }
 
             // cek data cctv

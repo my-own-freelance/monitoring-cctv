@@ -54,6 +54,7 @@ Route::group(["middleware" => ["api", "auth:api"]], function () {
 
         // akses operator & operator cctv
         Route::get("datatable", [ApiBuildingController::class, "dataTable"]);
+        Route::get("/list", [ApiBuildingController::class, "list"]);
         Route::get("{id}/detail", [ApiBuildingController::class, "getDetail"]);
     });
 
@@ -83,7 +84,7 @@ Route::group(["middleware" => ["api", "auth:api"]], function () {
 
         // akses operator & operator cctv
         Route::get("datatable", [ApiCctvController::class, "dataTable"]);
-        Route::get("/list", [ApiFloorController::class, "list"]);
+        Route::get("/list", [ApiCctvController::class, "list"]);
         Route::get("{id}/detail", [ApiCctvController::class, "getDetail"]);
     });
 
@@ -137,6 +138,7 @@ Route::prefix("admin")->namespace("admin")->middleware(["check.auth"])->group(fu
 
         // akses operator & operator cctv
         Route::get("/datatable", [WebBuildingController::class, "dataTable"]);
+        Route::get("/list", [WebBuildingController::class, "list"]);
         Route::get("/{id}/detail", [WebBuildingController::class, "getDetail"]);
     });
 

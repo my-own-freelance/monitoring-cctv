@@ -256,4 +256,21 @@ class BuildingService
             ], 500);
         }
     }
+
+    public function list($request)
+    {
+        try {
+            $data = Building::select("id", "name")->get();
+
+            return response()->json([
+                "status" => "success",
+                "data" => $data
+            ]);
+        } catch (\Exception $err) {
+            return response()->json([
+                "status" => "error",
+                "message" => $err->getMessage()
+            ], 500);
+        }
+    }
 }

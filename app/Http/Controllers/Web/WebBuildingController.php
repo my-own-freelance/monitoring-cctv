@@ -47,4 +47,9 @@ class WebBuildingController extends Controller
     {
         return $this->buildingService->destroy($request);
     }
+
+    public function list(Request $request)
+    {
+        return $this->buildingService->list($request);
+    }
 }

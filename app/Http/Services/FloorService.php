@@ -260,8 +260,7 @@ class FloorService
             $data = $query->get();
             return response()->json([
                 "status" => "success",
-                "data" => $data,
-                "id" => $request->query("building_id")
+                "data" => $data
             ]);
         } catch (\Exception $err) {
             return response()->json([

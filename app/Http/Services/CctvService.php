@@ -312,8 +312,7 @@ class CctvService
             $data = $query->get();
             return response()->json([
                 "status" => "success",
-                "data" => $data,
-                "id" => $request->query("floor_id")
+                "data" => $data
             ]);
         } catch (\Exception $err) {
             return response()->json([

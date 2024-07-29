@@ -462,6 +462,9 @@
         $("#building_id").change(function() {
             let building_id = $(this).val();
             getFloorList(building_id);
+            // reset cctv
+            $("#cctv_id").empty();
+            $('#cctv_id').append("<option value =''>Pilih Cctv</option > ");
         })
 
         function getFloorList(building_id) {
@@ -497,9 +500,9 @@
             getCctvList(floor_id);
         })
 
-        function getCctvList(cctv_id) {
+        function getCctvList(floor_id) {
             $.ajax({
-                url: `/api/admin/cctv/list?cctv_id=${cctv_id}`,
+                url: `/api/admin/cctv/list?floor_id=${floor_id}`,
                 method: "GET",
                 header: {
                     "Content-Type": "application/json"

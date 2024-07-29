@@ -19,7 +19,9 @@ return new class extends Migration
             $table->string('password');
             $table->enum('role', ["superadmin", "operator", "operator_cctv"]);
             $table->enum('is_active', ['Y', 'N'])->default('Y');
-            $table->timestamp('email_verified_at')->nullable();
+            $table->string('image')->nullable();
+            $table->string('device_token')->nullable();
+            $table->timestamp('email_verified_at')->unique()->nullable();
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

@@ -25,7 +25,9 @@ class User extends Authenticatable implements JWTSubject
         'email',
         'password',
         'is_active',
-        'role'
+        'role',
+        'image',
+        'device_token'
     ];
 
     /**
@@ -58,8 +60,8 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
-    public function userBuilding()
+    public function userCctv()
     {
-        return $this->hasMany(UserBuilding::class);
+        return $this->hasMany(UserCctv::class);
     }
 }

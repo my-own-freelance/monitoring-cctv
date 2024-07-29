@@ -34,7 +34,7 @@ class WebAuthController extends Controller
     // API
     public function register(Request $request)
     {
-        return $this->authService->register($request);
+        return $this->authService->register($request, "web");
     }
 
     public function validateLogin(Request $request)

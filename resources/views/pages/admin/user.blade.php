@@ -49,6 +49,7 @@
                                     <th class="all">Email</th>
                                     <th class="all">Level</th>
                                     <th class="all">Status</th>
+                                    <th class="all">Device Token</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -115,6 +116,12 @@
                                 <option value="operator">Operator</option>
                                 <option value="operator_cctv">Operator CCTV</option>
                             </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="device_token">Device Token</label>
+                            <input class="form-control" id="device_token" type="text" name="device_token"
+                                placeholder="masukan token image mobile phone (optional)" />
+                            <small class="text-warning">Optional - hanya digunakan untuk mengubah akses mobile</small>
                         </div>
                         <div class="form-group">
                             <button class="btn btn-sm btn-primary" type="submit" id="submit">
@@ -249,6 +256,8 @@
                     data: "role"
                 }, {
                     data: "is_active"
+                }, {
+                    data: "device_token"
                 }],
                 pageLength: 10,
             });
@@ -308,6 +317,7 @@
                         $("#password").val(d.password);
                         $("#role").val(d.role);
                         $("#is_active").val(d.is_active);
+                        $("#device_token").val(d.device_token);
                     })
                 },
                 error: function(err) {
@@ -328,6 +338,7 @@
             formData.append("password", $("#password").val());
             formData.append("role", $("#role").val());
             formData.append("is_active", $("#is_active").val());
+            formData.append("device_token", $("#device_token").val());
 
             saveData(formData, $("#formEditable").attr("data-action"));
             return false;

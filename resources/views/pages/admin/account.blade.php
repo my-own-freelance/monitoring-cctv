@@ -11,6 +11,10 @@
                 </div>
                 <div class="card-body">
                     <form id="formCountInformation">
+                        <div class="avatar avatar-xxl mb-3" id="imageProfile">
+                            <img src="{{ asset('dashboard/img/jm_denis.jpg') }}" alt="..."
+                                class="avatar-img rounded-circle">
+                        </div>
                         <input type="hidden" name="id" id="id">
                         <div class="tab-pane active" id="countinformation" (role="tabpanel")>
                             <div class="row mt-3">
@@ -49,6 +53,16 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <div class="form-group form-group-default">
+                                        <label>Foto Pengguna</label>
+                                        <input class="form-control" id="image" type="file" name="image"
+                                            placeholder="upload gambar" />
+                                        <small class="text-danger">Max ukuran 1MB</small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="text-right mt-3 mb-3">
                             <button class="btn btn-success" type="submit">Save</button>
@@ -74,6 +88,7 @@
             formData.append("name", $("#name").val());
             formData.append("email", $("#email").val());
             formData.append("password", $("#password").val());
+            formData.append("image", document.getElementById("image").files[0]);
 
             createAndUpdate(formData);
             return false;
@@ -89,6 +104,10 @@
                     $("#name").val(d.name);
                     $("#email").val(d.email);
                     $("#username").val(d.username);
+
+                    if (d.image) {
+                        $('#imageProfile img').attr('src', d.image);
+                    }
 
                 },
                 error: function(err) {

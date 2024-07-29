@@ -4,11 +4,12 @@ namespace App\Http\Services;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class AuthService
 {
-    public function register($request)
+    public function register($request, $type)
     {
         try {
             $rules = [
@@ -32,6 +33,12 @@ class AuthService
                 "passwordConfirm.same" => "Password Confirm tidak sesuai"
             ];
 
+            if ($type == "mobile") {
+                $rules["device_token"] = "required|string|unique:users";
+                $messages["device_token.required"] = "Device Token harus di isi untuk akses mobile";
+                $messages["device_token.unique"] = "Device sudah terdafar untuk akun lain";
+            }
+
             $validator = Validator::make($request->all(), $rules, $messages);
             if ($validator->fails()) {
                 return response()->json([
@@ -47,6 +54,9 @@ class AuthService
             $user->password = Hash::make($request->password);
             $user->role = "operator_cctv";
             $user->is_active = "Y";
+            if ($request->device_token) {
+                $user->device_token = $request->device_token;
+            }
             $user->save();
 
             return response()->json([
@@ -69,10 +79,15 @@ class AuthService
                 "name" => "required|string",
                 "email" => "required|string|email",
                 "password" => "nullable",
+                "image" => "nullable"
             ];
 
             if (isset($data["password"]) && $data["password"] != "") {
                 $rules['password'] .= "|string|min:5";
+            }
+
+            if ($request->file('image')) {
+                $rules['image'] .= '|image|max:1024|mimes:giv,svg,jpeg,png,jpg';
             }
 
             $messages = [
@@ -80,6 +95,9 @@ class AuthService
                 "email.required" => "Email harus diisi",
                 "email.email" => "Email tidak valid",
                 "password.min" => "Password minimal 5 karakter",
+                "image.image" => "Gambar yang di upload tidak valid",
+                "image.max" => "Ukuran gambar maximal 1MB",
+                "image.mimes" => "Format gambar harus giv/svg/jpeg/png/jpg"
             ];
 
             $validator = Validator::make($data, $rules, $messages);
@@ -103,6 +121,16 @@ class AuthService
                 $data["password"] = Hash::make($data["password"]);
             } else {
                 unset($data["password"]);
+            }
+
+            // delete undefined data image
+            unset($data["image"]);
+            if ($request->file("image")) {
+                $oldImagePath = "public/" . $user->image;
+                if (Storage::exists($oldImagePath)) {
+                    Storage::delete($oldImagePath);
+                }
+                $data["image"] = $request->file("image")->store("assets/user", "public");
             }
 
             // jika email di update
@@ -138,6 +166,10 @@ class AuthService
                     "status" => "error",
                     "message" => "Data user tidak ditemukan"
                 ], 404);
+            }
+
+            if ($data->image) {
+                $data['image'] =  url("/") . Storage::url($data->image);
             }
 
             return response()->json([

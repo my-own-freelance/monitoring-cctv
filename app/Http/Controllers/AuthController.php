@@ -25,7 +25,7 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        return $this->authService->register($request);
+        return $this->authService->register($request, "mobile");
     }
 
     public function detail()
@@ -48,11 +48,13 @@ class AuthController extends Controller
         $rules = [
             "username" => "required|string",
             "password" => "required|string",
+            "device_token" => "required|string",
         ];
 
         $messages = [
             "username.required" => "Username harus diisi",
-            "password.required" => "Password harus diisi"
+            "password.required" => "Password harus diisi",
+            "device_token.required" => "Device Token harus diisi"
         ];
 
         $validate = Validator::make($request->all(), $rules, $messages);
@@ -69,6 +71,18 @@ class AuthController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
+        $user = User::where('username', $request->username)->first();
+        if ($user->device_token && $user->device_token != $request->device_token) {
+            return response()->json([
+                "status" => "error",
+                "message" => "Perangkat Mobile tidak terdaftar untuk akun yang anda gunakan"
+            ], 400);
+        }
+
+        // jika belum pernah di set device token, set dengan device token pertama login
+        if (!$user->device_token) {
+            $user->update(["device_token" => $request->device_token]);
+        }
         return $this->respondWithToken($token);
     }
 

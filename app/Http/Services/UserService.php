@@ -11,13 +11,14 @@ class UserService
 {
     public function dataTable($request)
     {
-        $query = User::select("id", "name", "username", "email", "role", "is_active");
+        $query = User::select("id", "name", "username", "email", "role", "is_active", "device_token");
 
         if ($request->query("search")) {
             $searchValue = $request->query("search")['value'];
             $query->where(function ($query) use ($searchValue) {
                 $query->where('name', 'like', '%' . $searchValue . '%')
-                    ->orWhere('username', 'like', '%' . $searchValue . '%');
+                    ->orWhere('username', 'like', '%' . $searchValue . '%')
+                    ->orWhere('device_token', 'like', '%' . $searchValue . '%');
             });
         }
 
@@ -106,7 +107,7 @@ class UserService
     public function getDetail($id)
     {
         try {
-            $user = User::select("id", "name", "username", "email", "role", "is_active")->find($id);
+            $user = User::select("id", "name", "username", "email", "role", "is_active", "device_token")->find($id);
 
             if (!$user) {
                 return response()->json([
@@ -248,6 +249,11 @@ class UserService
                     "status" => "error",
                     "message" => "Email sudah digunakan"
                 ], 404);
+            }
+
+            // update device token
+            if ($data["device_token"] == "") {
+                $data["device_token"] = null;
             }
 
             $user->update($data);

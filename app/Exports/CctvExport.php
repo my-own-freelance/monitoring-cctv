@@ -41,12 +41,10 @@ class CctvExport implements FromCollection, WithHeadings
                 $item->id,
                 $item->name,
                 $item->url,
-                $item->building->name,
-                $item->floor->name,
                 $item->building->id,
                 $item->floor->id,
-                $item->created_at,
-                $item->updated_at,
+                $item->building->name,
+                $item->floor->name,
             ];
         });
     }
@@ -58,12 +56,10 @@ class CctvExport implements FromCollection, WithHeadings
             'ID',
             'Name',
             'URL',
-            'Building Name',
-            'Floor Name',
-            'Building ID',
-            'Floor ID',
-            'Created At',
-            'Updated At',
+            'Building_ID',
+            'Floor_ID',
+            'Building_Name',
+            'Floor_Name',
         ];
     }
 }

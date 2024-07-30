@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Web;
 use App\Exports\CctvExport;
 use App\Http\Controllers\Controller;
 use App\Http\Services\CctvService;
+use App\Imports\CctvImport;
 use App\Models\Building;
 use App\Models\Floor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 
 class WebCctvController extends Controller
@@ -73,5 +75,33 @@ class WebCctvController extends Controller
         ];
 
         return Excel::download(new CctvExport($filters), 'cctv_data.csv');
+    }
+
+    public function importCsv(Request $request)
+    {
+        $rules = [
+            "file" => 'required|mimes:csv|max:10240',
+        ];
+
+        $messages = [
+            "file.required" => "File import harus diisi",
+            "file.max" => "Ukuran gambar maximal 10MB",
+            "file.mimes" => "Format file harus .csv"
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails()) {
+            return response()->json([
+                "status" => "error",
+                "message" => $validator->errors()->first(),
+            ], 400);
+        }
+
+        Excel::import(new CctvImport, $request->file('file'));
+
+        return response()->json([
+            "status" => "success",
+            "message" => "Data Berhasil di Import"
+        ]);
     }
 }

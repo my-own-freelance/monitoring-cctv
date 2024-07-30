@@ -170,6 +170,7 @@ Route::prefix("admin")->namespace("admin")->middleware(["check.auth"])->group(fu
         Route::get("/datatable", [WebCctvController::class, "dataTable"]);
         Route::get("/list", [WebCctvController::class, "list"]);
         Route::get("/{id}/detail", [WebCctvController::class, "getDetail"]);
+        Route::post('/import-csv', [WebCctvController::class, 'importCsv']);
     });
 
 

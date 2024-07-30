@@ -13,6 +13,9 @@
                         <button class="btn btn-mini btn-info mr-1" onclick="return refreshData();">Refresh</button>
                         @if ($user->role == 'superadmin')
                             <button class="btn btn-mini btn-primary" onclick="return addData();">Tambah Data</button>
+                            @if ($user->is_master)
+                                <button class="btn btn-mini btn-success" onclick="return importData();">Import Data</button>
+                            @endif
                         @endif
                     </div>
                     @if ($user->role != 'operator_cctv')
@@ -126,6 +129,37 @@
                 </div>
             </div>
         </div>
+
+        {{-- form import csv --}}
+        <div class="col-md-4 col-sm-12" style="display: none" id="formImport">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <h5>Tambah / Edit Data</h5>
+                    </div>
+                    <div class="card-header-right">
+                        <button class="btn btn-sm btn-warning" onclick="return closeForm(this)" id="btnCloseForm">
+                            <i class="ion-android-close"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-block">
+                    <form>
+                        <div class="form-group">
+                            <label for="fileImport">File CSV</label>
+                            <input class="form-control" id="fileImport" type="file" name="fileImport"
+                                placeholder="upload gambar" />
+                            <small class="text-danger">Max ukuran 10MB</small>
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-sm btn-primary" type="submit" id="submit">
+                                <i class="ti-save"></i><span>Import</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 @endsection
 @push('scripts')
@@ -191,9 +225,16 @@
 
 
         function addData() {
+            $("#formImport").slideUp(200);
             $("#formEditable").attr('data-action', 'add').fadeIn(200);
             $("#boxTable").removeClass("col-md-12").addClass("col-md-8");
             $("#name").focus();
+        }
+
+        function importData() {
+            $("#formEditable").slideUp(200);
+            $("#formImport").attr('data-action', 'add').fadeIn(200);
+            $("#boxTable").removeClass("col-md-12").addClass("col-md-8");
         }
 
         function closeForm() {
@@ -201,6 +242,7 @@
                 $("#boxTable").removeClass("col-md-8").addClass("col-md-12");
                 $("#reset").click();
             })
+            $("#formImport").slideUp(200);
         }
 
         function getData(id) {
@@ -245,6 +287,39 @@
         function saveData(data, action) {
             $.ajax({
                 url: action == "update" ? "/api/admin/cctv/update" : "/api/admin/cctv/create",
+                contentType: false,
+                processData: false,
+                method: "POST",
+                data: data,
+                beforeSend: function() {
+                    console.log("Loading...")
+                },
+                success: function(res) {
+                    closeForm();
+                    showMessage("success", "flaticon-alarm-1", "Sukses", res.message);
+                    refreshData();
+                },
+                error: function(err) {
+                    console.log("error :", err);
+                    showMessage("danger", "flaticon-error", "Peringatan", err.message || err.responseJSON
+                        ?.message);
+                }
+            })
+        }
+
+        $("#formImport form").submit(function(e){
+            e.preventDefault();
+            let formData = new FormData();
+
+            formData.append("file", document.getElementById("fileImport").files[0]);
+
+            saveImportData(formData, $("#formEditable").attr("data-action"));
+            return false;
+        })
+
+        function saveImportData(data){
+            $.ajax({
+                url: "/api/admin/cctv/import-csv",
                 contentType: false,
                 processData: false,
                 method: "POST",
@@ -348,7 +423,7 @@
                 floor_id: $("#fFloor").val(),
             }
 
-            window.location.href = "/admin/export-csv?" + $.param(dataFilter)
+            window.location.href = "/admin/cctv/export-csv?" + $.param(dataFilter)
         }
     </script>
 @endpush

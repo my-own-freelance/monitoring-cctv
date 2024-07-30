@@ -69,7 +69,7 @@ class WebAuthController extends Controller
 
             if (Auth::attempt(['username' => $request->username, 'password' => $request->password])) {
                 $data = User::where('username', $request->username)
-                    ->select('name', 'username', 'role', 'is_active')
+                    ->select('name', 'username', 'role', 'is_active', 'is_master')
                     ->first();
 
                 // $request->session()->put('user', $data);

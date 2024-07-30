@@ -20,7 +20,8 @@ class DashboardController extends Controller
         $buildings = Building::count();
         $floors = Floor::count();
         $cctvs = Cctv::count();
-        $users = User::count();
+        $users = User::whereNull('is_master')
+            ->orWhere('is_master', false)->count();
         $buildingName = "NOT ASSIGN";
 
         if ($user->role == "operator_cctv") {

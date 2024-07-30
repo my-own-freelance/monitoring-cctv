@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Exports\CctvExport;
 use App\Http\Controllers\Controller;
 use App\Http\Services\CctvService;
 use App\Models\Building;
 use App\Models\Floor;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class WebCctvController extends Controller
 {
@@ -60,5 +62,16 @@ class WebCctvController extends Controller
     public function list(Request $request)
     {
         return $this->cctvService->list($request);
+    }
+
+
+    public function exportCsv(Request $request)
+    {
+        $filters = [
+            'building_id' => $request->query("building_id"),
+            'floor_id' => $request->query("floor_id"),
+        ];
+
+        return Excel::download(new CctvExport($filters), 'cctv_data.csv');
     }
 }

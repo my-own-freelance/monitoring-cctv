@@ -11,7 +11,9 @@ class UserService
 {
     public function dataTable($request)
     {
-        $query = User::select("id", "name", "username", "email", "role", "is_active", "device_token");
+        $query = User::select("id", "name", "username", "email", "role", "is_active", "device_token")
+            ->whereNull('is_master')
+            ->orWhere('is_master', false);
 
         if ($request->query("search")) {
             $searchValue = $request->query("search")['value'];
@@ -95,7 +97,8 @@ class UserService
             return $item;
         });
 
-        $total = User::count();
+        $total = User::whereNull('is_master')
+            ->orWhere('is_master', false)->count();
         return response()->json([
             'draw' => $request->query('draw'),
             'recordsFiltered' => $recordsFiltered,

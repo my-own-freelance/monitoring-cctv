@@ -34,4 +34,5 @@ Route::group(['middleware' => 'auth:web', 'prefix' => 'admin'], function () {
     Route::get("/cctv", [WebCctvController::class, "index"])->name("cctv");
     Route::get("/user", [WebUserController::class, "index"])->name("user");
     Route::get('/account', [WebAuthController::class, 'account'])->name('account');
+    Route::get('/export-csv', [WebCctvController::class, 'exportCsv']);
 });

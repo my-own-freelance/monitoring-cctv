@@ -11,7 +11,7 @@
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
-    {{-- <link rel="icon" href="{{ asset('dashboard/icon/icon.png') }}" type="image/x-icon" /> --}}
+    <link rel="icon" href="{{ asset('dashboard/icon/icon.png') }}" type="image/x-icon" />
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 
     @include('partials.dashboard.styles')

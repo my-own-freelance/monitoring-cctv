@@ -21,6 +21,7 @@ return new class extends Migration
             $table->enum('is_active', ['Y', 'N'])->default('Y');
             $table->string('image')->nullable();
             $table->string('device_token')->nullable();
+            $table->boolean('is_master')->nullable();
             $table->timestamp('email_verified_at')->unique()->nullable();
             $table->rememberToken();
             $table->timestamps();

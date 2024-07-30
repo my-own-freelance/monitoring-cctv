@@ -42,8 +42,8 @@ Route::group(["middleware" => "api"], function () {
     });
 });
 
+Route::get("/custom_template/detail", [CustomTemplateController::class, "detail"]);
 Route::group(["middleware" => ["api", "auth:api"]], function () {
-    Route::get("/custom_template/detail", [CustomTemplateController::class, "detail"]);
     Route::post("/custom_template/create_update", [CustomTemplateController::class, "saveUpdateData"]);
 
     // Building

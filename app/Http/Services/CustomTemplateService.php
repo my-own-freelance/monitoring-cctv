@@ -2,13 +2,8 @@
 
 namespace App\Http\Services;
 
-use App\Models\Building;
-use App\Models\Cctv;
 use App\Models\CustomTemplate;
-use App\Models\Floor;
-use App\Models\UserCctv;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 
 class CustomTemplateService
 {
@@ -24,8 +19,18 @@ class CustomTemplateService
                 ], 404);
             }
 
+            if (!$customTemplate->web_title) {
+                $customTemplate["web_title"] = "CCTV";
+            }
+
+            if (!$customTemplate->web_description) {
+                $customTemplate["web_description"] = "Dashboard pengelolaan data monitoring CCTV bangunan, lantai untuk monitoring CCTV real-time di mobile apps";
+            }
+
             if ($customTemplate->web_logo) {
                 $customTemplate['web_logo'] =  url("/") . Storage::url($customTemplate->web_logo);
+            } else {
+                $customTemplate['web_logo'] = url("/") . "/dashboard/icon/icon.png";
             }
 
             return response()->json([

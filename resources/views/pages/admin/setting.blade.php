@@ -12,7 +12,7 @@
                 <div class="card-body">
                     <form id="formCountInformation">
                         <div class="avatar avatar-xxl mb-3" id="imageProfile">
-                            <img src="{{ asset('dashboard/img/jm_denis.jpg') }}" alt="..."
+                            <img src="{{ asset('dashboard/icon/icon.png') }}" alt="..."
                                 class="avatar-img rounded-circle">
                         </div>
                         <input type="hidden" name="id" id="id">

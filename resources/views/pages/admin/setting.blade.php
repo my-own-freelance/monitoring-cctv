@@ -40,7 +40,7 @@
                                 <div class="col-md-12">
                                     <div class="form-group form-group-default">
                                         <label>Deskripsi Web</label>
-                                        <textarea name="web_description" id="web_description" cols="90" rows="5"></textarea>
+                                        <textarea name="web_description" id="web_description" cols="70" rows="5"></textarea>
                                     </div>
                                 </div>
                             </div>

@@ -92,8 +92,8 @@ class UserService
 
             $item['action'] = $action;
             $item['role'] = $role;
+            $item['status_is_active'] = $item['is_active'];
             $item['is_active'] = $is_active;
-
             return $item;
         });
 

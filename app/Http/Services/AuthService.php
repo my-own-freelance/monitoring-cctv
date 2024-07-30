@@ -180,7 +180,6 @@ class AuthService
             return response()->json([
                 "status" => "error",
                 "message" => $err->getMessage(),
-                "user" => $user
             ], 500);
         }
     }

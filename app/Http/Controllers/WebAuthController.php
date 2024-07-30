@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Services\AuthService;
+use App\Models\CustomTemplate;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,7 +23,12 @@ class WebAuthController extends Controller
     public function login(Request $request)
     {
         $title = "Kelola Akses";
-        return view("pages.auth.index", compact("title"));
+        $setting = CustomTemplate::find(1);
+        $description = "Dashboard pengelolaan data monitoring CCTV bangunan, lantai untuk monitoring CCTV real-time di mobile apps";
+        if ($setting && $setting->web_description) {
+            $description = $setting->web_description;
+        }
+        return view("pages.auth.index", compact("title", 'description'));
     }
 
     public function account()

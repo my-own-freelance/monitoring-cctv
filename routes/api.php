@@ -43,6 +43,9 @@ Route::group(["middleware" => "api"], function () {
 });
 
 Route::group(["middleware" => ["api", "auth:api"]], function () {
+    Route::get("/custom_template/detail", [CustomTemplateController::class, "detail"]);
+    Route::post("/custom_template/create_update", [CustomTemplateController::class, "saveUpdateData"]);
+
     // Building
     Route::group(["prefix" => "building"], function () {
         // akses khusus superadmin
@@ -124,6 +127,7 @@ Route::group(["middleware" => ["api", "auth:api"]], function () {
 Route::post("/auth/login/validate", [WebAuthController::class, "validateLogin"]);
 
 
+Route::get("/custom_template/detail", [CustomTemplateController::class, "detail"]);
 Route::prefix("admin")->namespace("admin")->middleware(["check.auth"])->group(function () {
     Route::post("/custom_template/create_update", [CustomTemplateController::class, "saveUpdateData"]);
 

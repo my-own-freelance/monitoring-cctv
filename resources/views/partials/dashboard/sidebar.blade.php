@@ -59,6 +59,14 @@
                         </a>
                     </li>
                 @endif
+                @if ($user->role == 'superadmin')
+                    <li class="nav-item ml-3 {{ $routename == 'setting' ? 'active' : '' }}">
+                        <a href="{{ route('setting') }}">
+                            <i class="fas fa-cogs"></i>
+                            <p>Setting Web</p>
+                        </a>
+                    </li>
+                @endif
                 <li class="nav-section">
                     <span class="sidebar-mini-icon">
                         <i class="fa fa-ellipsis-h"></i>

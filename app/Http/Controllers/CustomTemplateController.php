@@ -2,27 +2,34 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Services\CustomTemplateService;
 use App\Models\CustomTemplate;
 use Illuminate\Http\Request;
 
 class CustomTemplateController extends Controller
 {
+
+    protected $customTemplateService;
+
+    public function __construct(CustomTemplateService $customTemplateService)
+    {
+        $this->customTemplateService = $customTemplateService;
+    }
+
+
+    public function index()
+    {
+        $title = "Setting Website";
+        return view('pages.admin.setting', compact('title'));
+    }
+
+    public function detail()
+    {
+        return $this->customTemplateService->detail();
+    }
+
     public function saveUpdateData(Request $request)
     {
-        $data = $request->all();
-        $existCustomData = CustomTemplate::find(1);
-        if (!$existCustomData) {
-            CustomTemplate::create($data);
-            return response()->json([
-                "status" => 200,
-                "message" => "Warna template berhasil diubah"
-            ]);
-        }
-
-        $existCustomData->update($data);
-        return response()->json([
-            "status" => 200,
-            "message" => "Warna template berhasil diubah"
-        ]);
+        return $this->customTemplateService->saveUpdateData($request);
     }
 }

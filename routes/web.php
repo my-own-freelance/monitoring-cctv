@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CustomTemplateController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Web\WebBuildingController;
 use App\Http\Controllers\Web\WebCctvController;
@@ -33,6 +34,7 @@ Route::group(['middleware' => 'auth:web', 'prefix' => 'admin'], function () {
     Route::get("/floor", [WebFloorController::class, "index"])->name("floor");
     Route::get("/cctv", [WebCctvController::class, "index"])->name("cctv");
     Route::get("/user", [WebUserController::class, "index"])->name("user");
+    Route::get("/setting", [CustomTemplateController::class, "index"])->name("setting");
     Route::get('/account', [WebAuthController::class, 'account'])->name('account');
     Route::get('/cctv/export-csv', [WebCctvController::class, 'exportCsv']);
 });

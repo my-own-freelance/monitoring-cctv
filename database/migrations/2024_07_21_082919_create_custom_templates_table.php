@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string('topbar_color')->nullable();
             $table->string('sidebar_color')->nullable();
             $table->string('bg_color')->nullable();
+            $table->string('web_title')->nullable();
+            $table->string('web_logo')->nullable();
+            $table->longText('web_description')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

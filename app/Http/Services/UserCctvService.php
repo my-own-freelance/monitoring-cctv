@@ -70,19 +70,22 @@ class UserCctvService
                                 </div>
                             </div>";
             }
-
-            $item['floor'] = Floor::select("name", "building_id")->find($item->cctv->floor_id);
-            $item['building'] = null;
-            if ($item['floor']) {
-                $item['building'] = Building::select("name")->find($item['floor']['building_id']);
-                $item['floor'] = $item['floor']['name'];
-                if ($item['building']) {
-                    $item['building'] = $item['building']['name'];
+            $item['floor'] = "-";
+            $item['building'] = "-";
+            $cctvName = "-";
+            if ($item['cctv']) {
+                $cctvName = $item['cctv']['name'];
+                $item['floor'] = Floor::select("name", "building_id")->find($item['cctv']['floor_id']);
+                if ($item['floor']) {
+                    $item['building'] = Building::select("name")->find($item['floor']['building_id']);
+                    $item['floor'] = $item['floor']['name'];
+                    if ($item['building']) {
+                        $item['building'] = $item['building']['name'];
+                    }
                 }
             }
-            $cctv = $item['cctv']['name'];
             unset($item['cctv']);
-            $item['cctv'] = $cctv;
+            $item['cctv'] = $cctvName;
             $item['action'] = $action;
             return $item;
         });

@@ -449,11 +449,11 @@
                 columns: [{
                     data: "action"
                 }, {
-                    data: "cctv.floor.building.name"
+                    data: "building"
                 }, {
-                    data: "cctv.floor.name"
+                    data: "floor"
                 }, {
-                    data: "cctv.name"
+                    data: "cctv"
                 }],
                 pageLength: 10,
             });

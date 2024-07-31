@@ -2,7 +2,9 @@
 
 namespace App\Http\Services;
 
+use App\Models\Building;
 use App\Models\Cctv;
+use App\Models\Floor;
 use App\Models\User;
 use App\Models\UserCctv;
 use Illuminate\Support\Facades\Validator;
@@ -12,13 +14,14 @@ class UserCctvService
     public function dataTable($request)
     {
         $query = UserCctv::with(['cctv' => function ($query) {
-            $query->select('id', 'name', 'floor_id', 'building_id')->with(['floor' => function ($query) {
-                $query->select('id', 'name', 'building_id')->with(['building' => function ($query) {
-                    $query->select('id', 'name');
-                }]);
-            }]);
+            // $query->select('id', 'name', 'floor_id', 'building_id')->with(['floor' => function ($query) {
+            //     $query->select('id', 'name', 'building_id')->with(['building' => function ($query) {
+            //         $query->select('id', 'name');
+            //     }]);
+            // }]);
         }])->select('id', 'user_id', 'cctv_id');
 
+        // $query = UserCctv::query();
         // HANYA SUPERADMIN YG BISA MELIHAT DATA
         $user = auth()->user();
         if ($user->role != "superadmin") {
@@ -68,6 +71,18 @@ class UserCctvService
                             </div>";
             }
 
+            $item['floor'] = Floor::select("name", "building_id")->find($item->cctv->floor_id);
+            $item['building'] = null;
+            if ($item['floor']) {
+                $item['building'] = Building::select("name")->find($item['floor']['building_id']);
+                $item['floor'] = $item['floor']['name'];
+                if ($item['building']) {
+                    $item['building'] = $item['building']['name'];
+                }
+            }
+            $cctv = $item['cctv']['name'];
+            unset($item['cctv']);
+            $item['cctv'] = $cctv;
             $item['action'] = $action;
             return $item;
         });

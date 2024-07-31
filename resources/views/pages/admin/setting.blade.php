@@ -6,7 +6,7 @@
             <div class="card card-with-nav">
                 <div class="card-header">
                     <div class="card-header-left my-3">
-                        <h5 class="text-uppercase title">Management Account</h5>
+                        <h5 class="text-uppercase title">Management Application</h5>
                     </div>
                 </div>
                 <div class="card-body">

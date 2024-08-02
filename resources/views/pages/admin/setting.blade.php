@@ -20,7 +20,7 @@
                             <div class="row mt-3">
                                 <div class="col-md-12">
                                     <div class="form-group form-group-default">
-                                        <label>Judul Web</label>
+                                        <label>Judul Web/Aplikasi</label>
                                         <input type="text" class="form-control" id="web_title" name="web_title"
                                             placeholder="Judul Website">
                                     </div>
@@ -29,7 +29,7 @@
                             <div class="row mt-3">
                                 <div class="col-md-12">
                                     <div class="form-group form-group-default">
-                                        <label>Logo Web</label>
+                                        <label>Logo Web/Aplikasi</label>
                                         <input class="form-control" id="web_logo" type="file" name="web_logo"
                                             placeholder="upload gambar" />
                                         <small class="text-danger">Max ukuran 1MB</small>
@@ -39,7 +39,7 @@
                             <div class="row mt-3">
                                 <div class="col-md-12">
                                     <div class="form-group form-group-default">
-                                        <label>Deskripsi Web</label>
+                                        <label>Deskripsi Web/Aplikasi</label>
                                         <textarea name="web_description" id="web_description" cols="70" rows="5"></textarea>
                                     </div>
                                 </div>

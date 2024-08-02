@@ -75,7 +75,7 @@ class AuthController extends Controller
         if ($user->device_token && $user->device_token != $request->device_token) {
             return response()->json([
                 "status" => "error",
-                "message" => "Perangkat Mobile tidak terdaftar untuk akun yang anda gunakan"
+                "message" => "Device tidak terdaftar untuk akun yang anda gunakan"
             ], 400);
         }
 
@@ -86,7 +86,7 @@ class AuthController extends Controller
             if ($existingToken) {
                 return response()->json([
                     "status" => "error",
-                    "message" => "Perangkat Mobile sudah terdaftar untuk account lain"
+                    "message" => "Device sudah terdafar untuk akun lain"
                 ], 400);
             }
             $user->update(["device_token" => $request->device_token]);

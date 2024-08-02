@@ -81,6 +81,14 @@ class AuthController extends Controller
 
         // jika belum pernah di set device token, set dengan device token pertama login
         if (!$user->device_token) {
+            // cek dulu apakah token sudah dipakai orang lain atau belum
+            $existingToken = User::where("device_token", $request->device_token)->first();
+            if ($existingToken) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "Perangkat Mobile sudah terdaftar untuk account lain"
+                ], 400);
+            }
             $user->update(["device_token" => $request->device_token]);
         }
         return $this->respondWithToken($token);

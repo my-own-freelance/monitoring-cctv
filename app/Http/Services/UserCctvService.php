@@ -70,17 +70,17 @@ class UserCctvService
                                 </div>
                             </div>";
             }
-            $item['floor'] = "-";
-            $item['building'] = "-";
-            $cctvName = "-";
+            $item['floor'] = "Data Terhapus";
+            $item['building'] = "Data Terhapus";
+            $cctvName = "Data Terhapus";
             if ($item['cctv']) {
                 $cctvName = $item['cctv']['name'];
-                $item['floor'] = Floor::select("name", "building_id")->find($item['cctv']['floor_id']);
-                if ($item['floor']) {
-                    $item['building'] = Building::select("name")->find($item['floor']['building_id']);
-                    $item['floor'] = $item['floor']['name'];
-                    if ($item['building']) {
-                        $item['building'] = $item['building']['name'];
+                $floor = Floor::select("name", "building_id")->find($item['cctv']['floor_id']);
+                if ($floor) {
+                    $item['floor'] = $floor['name'];
+                    $building = Building::select("name")->find($floor['building_id']);
+                    if ($building) {
+                        $item['building'] = $building['name'];
                     }
                 }
             }

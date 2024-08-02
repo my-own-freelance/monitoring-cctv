@@ -449,11 +449,41 @@
                 columns: [{
                     data: "action"
                 }, {
-                    data: "building"
+                    data: 'building',
+                    "render": function(data, type, row, meta) {
+                        if (type === 'display') {
+                            if (data == 'Data Terhapus') {
+                                return `<div class="badge badge-danger">${data}</div>`;
+                            } else {
+                                data
+                            }
+                        }
+                        return data;
+                    }
                 }, {
-                    data: "floor"
+                    data: 'floor',
+                    "render": function(data, type, row, meta) {
+                        if (type === 'display') {
+                            if (data == 'Data Terhapus') {
+                                return `<div class="badge badge-danger">${data}</div>`;
+                            } else {
+                                data
+                            }
+                        }
+                        return data;
+                    }
                 }, {
-                    data: "cctv"
+                    data: 'cctv',
+                    "render": function(data, type, row, meta) {
+                        if (type === 'display') {
+                            if (data == 'Data Terhapus') {
+                                return `<div class="badge badge-danger">${data}</div>`;
+                            } else {
+                                data
+                            }
+                        }
+                        return data;
+                    }
                 }],
                 pageLength: 10,
             });

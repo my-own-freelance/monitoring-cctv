@@ -196,9 +196,29 @@
                 }, {
                     data: "name"
                 }, {
-                    data: "building.name"
+                    data: 'building',
+                    "render": function(data, type, row, meta) {
+                        if (type === 'display') {
+                            if (data == 'Data Terhapus') {
+                                return `<div class="badge badge-danger">${data}</div>`;
+                            } else {
+                                data
+                            }
+                        }
+                        return data;
+                    }
                 }, {
-                    data: "floor.name"
+                    data: 'floor',
+                    "render": function(data, type, row, meta) {
+                        if (type === 'display') {
+                            if (data == 'Data Terhapus') {
+                                return `<div class="badge badge-danger">${data}</div>`;
+                            } else {
+                                data
+                            }
+                        }
+                        return data;
+                    }
                 }, {
                     data: "url"
                 }],
@@ -307,7 +327,7 @@
             })
         }
 
-        $("#formImport form").submit(function(e){
+        $("#formImport form").submit(function(e) {
             e.preventDefault();
             let formData = new FormData();
 
@@ -317,7 +337,7 @@
             return false;
         })
 
-        function saveImportData(data){
+        function saveImportData(data) {
             $.ajax({
                 url: "/api/admin/cctv/import-csv",
                 contentType: false,

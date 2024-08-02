@@ -67,6 +67,9 @@ class FloorService
             }
 
             $item['action'] = $action;
+            $building = $item['building'];
+            unset($item['building']);
+            $item['building'] = $building ? $building['name'] : "Data Terhapus";
             return $item;
         });
 

@@ -75,15 +75,13 @@ class CctvService
                             </div>";
             }
 
-            $area = '<small>
-                        <strong>Gedung</strong> : ' . $item->building->name . '
-                        <br>
-                        <strong>Lantai</strong> : ' . $item->floor->name . '
-                        <br>
-                        <strong>Url CCTV </strong>: ' . $item->url . '
-                    </small>';
             $item['action'] = $action;
-            $item['area'] = $area;
+            $floor = $item['floor'];
+            $building = $item['building'];
+            unset($item['floor']);
+            unset($item['building']);
+            $item['floor'] = $floor ? $floor['name'] : "Data Terhapus";
+            $item['building'] = $building ? $building['name'] : "Data Terhapus";
             return $item;
         });
 

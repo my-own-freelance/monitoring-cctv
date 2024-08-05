@@ -36,15 +36,21 @@ class CctvExport implements FromCollection, WithHeadings
             'id', 'name', 'url', 'created_at', 'updated_at',
             'building_id', 'floor_id'
         ])->map(function ($item, $key) {
+            $floor = $item->floor;
+            $building = $item->building;
+            $floorId = $floor ? $floor->id : "Data Terhapus";
+            $floorName = $floor ? $floor->name : "Data Terhapus";
+            $buildingId = $building ? $building->id : "Data Terhapus";
+            $buildingName = $building ? $building->name : "Data Terhapus";
             return [
                 $key + 1,
                 $item->id,
                 $item->name,
                 $item->url,
-                $item->building->id,
-                $item->floor->id,
-                $item->building->name,
-                $item->floor->name,
+                $buildingId,
+                $floorId,
+                $buildingName,
+                $floorName,
             ];
         });
     }

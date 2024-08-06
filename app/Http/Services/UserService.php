@@ -47,7 +47,7 @@ class UserService
             $user = auth()->user();
             if ($user->role == "superadmin") {
                 $action_delete = $user->id != $item->id ? "<a class='dropdown-item' onclick='return removeData(\"{$item->id}\");' href='javascript:void(0)' title='Hapus'>Hapus</a>" : "";
-                $action_add_cctv = $item->role == "operator_cctv" ? "<a class='dropdown-item' onclick='return addCctv(\"{$item->id}\");' href='javascript:void(0)' title='Tambah CCTV'>Atur CCTC</a>" : "";
+                $action_add_cctv = $item->role == "operator_cctv" ? "<a class='dropdown-item' onclick='return addCctv(\"{$item->id}\");' href='javascript:void(0)' title='Tambah CCTV'>Atur CCTV</a>" : "";
                 $action = "<div class='dropdown-primary dropdown open'>
                                 <button class='btn btn-sm btn-primary dropdown-toggle waves-effect waves-light' id='dropdown-{$item->id}' data-toggle='dropdown' aria-haspopup='true' aria-expanded='true'>
                                     Aksi

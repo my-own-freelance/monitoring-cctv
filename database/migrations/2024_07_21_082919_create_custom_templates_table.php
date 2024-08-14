@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('custom_templates', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('logo_header')->nullable();
+            $table->string('logo_header_color')->nullable();
             $table->string('topbar_color')->nullable();
             $table->string('sidebar_color')->nullable();
             $table->string('bg_color')->nullable();

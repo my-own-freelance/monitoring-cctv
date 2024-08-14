@@ -10,5 +10,5 @@ class CustomTemplate extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['logo_header', 'topbar_color', 'sidebar_color', 'bg_color', 'web_title', 'web_logo', 'web_description'];
+    protected $fillable = ['logo_header_color', 'topbar_color', 'sidebar_color', 'bg_color', 'web_title', 'web_logo', 'web_description'];
 }

@@ -429,6 +429,8 @@
                 $("#boxTable").slideUp(200)
                 $("#user_id").val(id);
             })
+            dTableUserCctv.clear();
+            dTableUserCctv.destroy();
             dataTableUserCctv(id);
         }
 

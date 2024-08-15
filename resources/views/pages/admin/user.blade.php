@@ -45,7 +45,7 @@
                                 <tr>
                                     <th class="all">#</th>
                                     <th class="all">Nama Pengguna</th>
-                                    <th class="all">Akun</th>
+                                    <th class="all">Username</th>
                                     <th class="all">Email</th>
                                     <th class="all">Level</th>
                                     <th class="all">Status</th>
@@ -152,7 +152,13 @@
                         <form>
                             <input class="form-control" id="user_id" type="hidden" name="user_id" />
                             <div class="row">
-                                <div class="col-md-3">
+                                <div class="col-md-2">
+                                    <div class="form-group mt-1">
+                                        <label for="target">Target User</label>
+                                        <input class="form-control" id="target" type="text" name="target" readonly />
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
                                     <div class="form-group">
                                         <label for="building_id">Area Gedung</label>
                                         <select class="form-control form-control" id="building_id" name="building_id">
@@ -163,7 +169,7 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <div class="form-group">
                                         <label for="floor_id">Area Lantai</label>
                                         <select class="form-control form-control" id="floor_id" name="floor_id">
@@ -172,7 +178,7 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <div class="form-group">
                                         <label for="cctv_id">Area CCTV</label>
                                         <select class="form-control form-control" id="cctv_id" name="cctv_id">
@@ -424,13 +430,16 @@
             })
         }
 
-        function addCctv(id) {
+        function addCctv(id, username) {
             $("#formUserCctv").fadeIn(200, function() {
                 $("#boxTable").slideUp(200)
                 $("#user_id").val(id);
+                $("#target").val(username)
             })
-            dTableUserCctv.clear();
-            dTableUserCctv.destroy();
+            if(dTableUserCctv){
+                dTableUserCctv.clear();
+                dTableUserCctv.destroy();
+            }
             dataTableUserCctv(id);
         }
 

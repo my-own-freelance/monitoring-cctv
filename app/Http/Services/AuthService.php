@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthService
 {
-    public function register($request, $type)
+    public function register($request)
     {
         try {
             $rules = [
@@ -33,12 +33,6 @@ class AuthService
                 "passwordConfirm.same" => "Password Confirm tidak sesuai"
             ];
 
-            if ($type == "mobile") {
-                $rules["device_token"] = "required|string|unique:users";
-                $messages["device_token.required"] = "Device Token harus di isi untuk akses mobile";
-                $messages["device_token.unique"] = "Device sudah terdafar untuk akun lain";
-            }
-
             $validator = Validator::make($request->all(), $rules, $messages);
             if ($validator->fails()) {
                 return response()->json([
@@ -54,9 +48,6 @@ class AuthService
             $user->password = Hash::make($request->password);
             $user->role = "operator_cctv";
             $user->is_active = "Y";
-            if ($request->device_token) {
-                $user->device_token = $request->device_token;
-            }
             $user->save();
 
             return response()->json([

@@ -25,7 +25,7 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        return $this->authService->register($request, "mobile");
+        return $this->authService->register($request);
     }
 
     public function detail()
@@ -75,7 +75,7 @@ class AuthController extends Controller
         if ($user->device_token && $user->device_token != $request->device_token) {
             return response()->json([
                 "status" => "error",
-                "message" => "Device tidak terdaftar untuk akun yang anda gunakan"
+                "message" => "Akun anda masih aktif di perangkat lain, silahkan lakukan logout terlebih dahulu"
             ], 400);
         }
 
@@ -86,7 +86,7 @@ class AuthController extends Controller
             if ($existingToken) {
                 return response()->json([
                     "status" => "error",
-                    "message" => "Device sudah terdafar untuk akun lain"
+                    "message" => "Device anda masih aktif menggunakan akun lama dengan username '" . $existingToken->username . "' silahkan lakukan login ulang kemudian logout menggunakan akun tersebut"
                 ], 400);
             }
             $user->update(["device_token" => $request->device_token]);
@@ -111,6 +111,7 @@ class AuthController extends Controller
      */
     public function logout()
     {
+        User::where("id", auth()->user()->id)->update(["device_token" => null]);
         auth()->logout();
 
         return response()->json(['message' => 'Successfully logged out']);

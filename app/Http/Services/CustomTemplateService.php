@@ -48,16 +48,21 @@ class CustomTemplateService
     public function saveUpdateData($request)
     {
         $data = $request->all();
+        unset($data['id']);
+        unset($data["web_logo"]);
         $existCustomData = CustomTemplate::find(1);
         if (!$existCustomData) {
+            if ($request->file("web_logo")) {
+                $data["web_logo"] = $request->file("web_logo")->store("assets/setting", "public");
+            }
+
             CustomTemplate::create($data);
             return response()->json([
                 "status" => 200,
-                "message" => "Warna template berhasil diubah"
+                "message" => "Setting Web berhasil diubah"
             ]);
         }
 
-        unset($data["web_logo"]);
         if ($request->file("web_logo")) {
             $oldImagePath = "public/" . $existCustomData->web_logo;
             if (Storage::exists($oldImagePath)) {
@@ -69,7 +74,7 @@ class CustomTemplateService
         $existCustomData->update($data);
         return response()->json([
             "status" => 200,
-            "message" => "Warna template berhasil diubah"
+            "message" => "Settin Web berhasil diubah"
         ]);
     }
 }

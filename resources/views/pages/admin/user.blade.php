@@ -120,7 +120,7 @@
                         <div class="form-group">
                             <label for="device_token">Device Token</label>
                             <input class="form-control" id="device_token" type="text" name="device_token"
-                                placeholder="masukan token image mobile phone (optional)" />
+                                placeholder="masukan token device mobile (optional)" />
                             <small class="text-warning">Optional - hanya digunakan untuk mengubah akses mobile</small>
                         </div>
                         <div class="form-group">

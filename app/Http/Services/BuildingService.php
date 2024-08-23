@@ -32,7 +32,7 @@ class BuildingService
 
         $recordsFiltered = $query->count();
 
-        $data = $query->orderBy('created_at', 'desc')
+        $data = $query->orderBy('id', 'desc')
             ->skip($request->query('start'))
             ->limit($request->query('length'))
             ->get();

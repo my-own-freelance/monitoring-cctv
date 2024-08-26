@@ -5,7 +5,8 @@
     $sidebarColor = $color && $color->sidebar_color ? $color->sidebar_color : 'white';
     $bgColor = $color && $color->bd_color ? $color->bd_color : 'bg1';
     $webTitle = $color && $color->web_title ? $color->web_title : 'CCTV';
-    $webLogo = $color && $color->web_logo ? url("/") . Storage::url($color->web_logo) : asset('dashboard/icon/icon.png');
+    $webLogo =
+        $color && $color->web_logo ? url('/') . Storage::url($color->web_logo) : asset('dashboard/icon/icon.png');
     $webDesciption = $color && $color->web_description ? $color->web_description : '';
 @endphp
 <!DOCTYPE html>
@@ -52,7 +53,11 @@
 
         @include('partials.dashboard.sidebar')
 
-        <div class="main-panel">
+        <div class="main-panel"
+            style="background-image: url('{{ asset('dashboard/img/background.jpg') }}');  background-size: cover; 
+            background-position: center; 
+            background-repeat: no-repeat; 
+            height: 100vh;">
             <div class="container">
                 <div class="page-inner mt-5">
                     @yield('content')

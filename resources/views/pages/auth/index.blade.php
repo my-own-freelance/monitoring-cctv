@@ -25,6 +25,9 @@
                             </div>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <div class="g-recaptcha" data-sitekey="{{ env('recaptcha2.key') }}"></div>
+                    </div>
                     <div class="form-group form-action-d-flex mb-3">
                         {{-- <div class="custom-control custom-checkbox">
                             <input type="checkbox" class="custom-control-input" id="rememberme">
@@ -44,11 +47,18 @@
     </div>
 @endsection
 @push('scripts')
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script>
         $("#formLogin").submit(function(e) {
             e.preventDefault();
 
-            let dataToSend = $(this).serialize();
+            let captchaResponse = grecaptcha.getResponse();
+            if (!captchaResponse) {
+                showMessage("danger", "flaticon-error", "Peringatan", "Silakan selesaikan reCAPTCHA.");
+                return;
+            }
+
+            let dataToSend = $(this).serialize() + "&g-recaptcha-response=" + captchaResponse;
             submitAuth(dataToSend, "login");
             return false;
         })

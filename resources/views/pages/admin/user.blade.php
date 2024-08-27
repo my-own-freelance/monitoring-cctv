@@ -155,7 +155,8 @@
                                 <div class="col-md-2">
                                     <div class="form-group mt-1">
                                         <label for="target">Target User</label>
-                                        <input class="form-control" id="target" type="text" name="target" readonly />
+                                        <input class="form-control" id="target" type="text" name="target"
+                                            readonly />
                                     </div>
                                 </div>
                                 <div class="col-md-2">
@@ -163,6 +164,7 @@
                                         <label for="building_id">Area Gedung</label>
                                         <select class="form-control form-control" id="building_id" name="building_id">
                                             <option value = "">Pilih Gedung</option>
+                                            <option value = "all">(FULL AKSES)</option>
                                             @foreach ($buildings as $building)
                                                 <option value = "{{ $building->id }}">{{ $building->name }}</option>
                                             @endforeach
@@ -436,7 +438,7 @@
                 $("#user_id").val(id);
                 $("#target").val(username)
             })
-            if(dTableUserCctv){
+            if (dTableUserCctv) {
                 dTableUserCctv.clear();
                 dTableUserCctv.destroy();
             }
@@ -502,10 +504,15 @@
 
         $("#building_id").change(function() {
             let building_id = $(this).val();
-            getFloorList(building_id);
-            // reset cctv
-            $("#cctv_id").empty();
-            $('#cctv_id').append("<option value =''>Pilih Cctv</option > ");
+            if (building_id == "all") {
+                $("#floor_id").empty().attr("disabled", true).append("<option value ='all' selected>(FULL AKSES)</option > ");
+                $("#cctv_id").empty().attr("disabled", true).append("<option value ='all' selected>(FULL AKSES)</option > ");
+            } else {
+                getFloorList(building_id);
+                // reset cctv
+                $("#cctv_id").attr("disabled", false).empty().append("<option value =''>Pilih Cctv</option > ");
+                $("#floor_id").attr("disabled", false)
+            }
         })
 
         function getFloorList(building_id) {
@@ -571,9 +578,12 @@
 
         $("#formUserCctv form").submit(function(e) {
             e.preventDefault();
+            let all_access = $("#cctv_id").val() == "all" ? "Y" : "N";
+            let cctv_id = all_access == "Y" ? 0 : parseInt($("#cctv_id").val());
             let formData = new FormData();
             formData.append("user_id", parseInt($("#user_id").val()));
-            formData.append("cctv_id", parseInt($("#cctv_id").val()));
+            formData.append("cctv_id", cctv_id);
+            formData.append("all_access", all_access);
 
             saveDataUserCctv(formData, $("#formEditable").attr("data-action"));
             return false;

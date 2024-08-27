@@ -78,7 +78,7 @@ class UserCctvService
                 $floor = Floor::select("name", "building_id")->find($item['cctv']['floor_id']);
                 if ($floor) {
                     $item['floor'] = $floor['name'];
-                    $building = Building::select("name")->find($floor['building_id']);
+                    $building = Building::select("name")->find($item['cctv']['building_id']);
                     if ($building) {
                         $item['building'] = $building['name'];
                     }
@@ -91,6 +91,11 @@ class UserCctvService
         });
 
         $total = UserCctv::count();
+        if ($request->query("user_id") && $request->query('user_id') != "") {
+            $user_id = $request->query("user_id");
+            $total = UserCctv::where("user_id", $user_id)->count();
+        }
+
         return response()->json([
             'draw' => $request->query('draw'),
             'recordsFiltered' => $recordsFiltered,
@@ -106,6 +111,7 @@ class UserCctvService
             $rules = [
                 "user_id" => "required|integer",
                 "cctv_id" => "required|integer",
+                "all_access" => "required|string|in:Y,N"
             ];
 
             $messages = [
@@ -113,6 +119,7 @@ class UserCctvService
                 "user_id.integer" => "Data User tidak valid",
                 "cctv_id.required" => "Data Cctv harus diisi",
                 "cctv_id.integer" => "Data Cctv tidak valid",
+                "all_access.in" => "Pengaturan all access tidak valid",
             ];
 
             $validator = Validator::make($data, $rules, $messages);
@@ -130,6 +137,32 @@ class UserCctvService
                     "status" => "error",
                     "message" => "User tidak tersedia / tidak valid"
                 ], 404);
+            }
+
+            // ada fitur baru dimana superadmin bisa melakukan set akses cctv kepada oprator cctv untuk all access ke semua cctv
+            if ($data["all_access"] == "Y") {
+                $existingUserCctv = UserCctv::where("user_id", $data["user_id"])->pluck("cctv_id")->toArray();
+                $newCctvData = Cctv::whereNotIn("id", $existingUserCctv)->get();
+
+                $newData = [];
+                $timestamp = now();
+                foreach ($newCctvData as $cctv) {
+                    $newData[] = [
+                        "user_id" => $data["user_id"],
+                        "cctv_id" => $cctv->id,
+                        "created_at" => $timestamp,
+                        "updated_at" => $timestamp
+                    ];
+                }
+
+                if (!empty($newData)) {
+                    UserCctv::insert($newData);
+                }
+
+                return response()->json([
+                    "status" => "success",
+                    "message" => "Berhasil menambahkan akses ke seluruh cctv"
+                ]);
             }
 
             // cek data cctv

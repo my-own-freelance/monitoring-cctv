@@ -307,7 +307,7 @@ class CctvService
                 $query->limit(100);
             }
 
-            $data = $query->get();
+            $data = $query->orderBy("name", "asc")->get();
             return response()->json([
                 "status" => "success",
                 "data" => $data

@@ -260,7 +260,7 @@ class BuildingService
     public function list($request)
     {
         try {
-            $data = Building::select("id", "name")->get();
+            $data = Building::select("id", "name")->orderBy("name", "asc")->get();
 
             return response()->json([
                 "status" => "success",

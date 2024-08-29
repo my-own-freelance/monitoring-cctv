@@ -3,6 +3,7 @@
 namespace App\Http\Services;
 
 use App\Models\Building;
+use App\Models\Cctv;
 use App\Models\Floor;
 use Illuminate\Support\Facades\Validator;
 
@@ -195,6 +196,12 @@ class FloorService
                 ], 404);
             }
 
+            // If the building_id on the floor is changed, please also change the building_id on the CCTV so that the data is in sync
+            if ($floor->building_id != $data["building_id"]) {
+                $cctvUpdate = ["building_id" =>  $data["building_id"]];
+                Cctv::where("floor_id", $floor->id)->update($cctvUpdate);
+            }
+
             $floor->update($data);
             return response()->json([
                 "status" => "success",
@@ -260,7 +267,7 @@ class FloorService
                 $query->limit(100);
             }
 
-            $data = $query->get();
+            $data = $query->orderBy("name", "asc")->get();
             return response()->json([
                 "status" => "success",
                 "data" => $data

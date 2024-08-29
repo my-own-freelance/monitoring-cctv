@@ -19,7 +19,7 @@ class WebUserController extends Controller
     public function index()
     {
         $title = "Data Pengguna";
-        $buildings = Building::all();
+        $buildings = Building::orderBy("name", "asc")->get();
         $user = Auth()->user();
         if ($user->role == "operator_cctv") {
             return redirect()->route("dashboard");

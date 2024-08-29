@@ -19,7 +19,7 @@ class WebFloorController extends Controller
     public function index()
     {
         $title = "Data Lantai";
-        $buildings = Building::all();
+        $buildings = Building::orderBy("name", "asc")->get();
         $user = Auth()->user();
         return view("pages.admin.floor", compact('title', 'buildings', 'user'));
     }

@@ -24,8 +24,8 @@ class WebCctvController extends Controller
     public function index()
     {
         $title = "Data CCTV";
-        $buildings = Building::all();
-        $floors = Floor::all();
+        $buildings = Building::orderBy("name", "asc")->get();
+        $floors = Floor::orderBy("name", "asc")->get();
         $user = Auth()->user();
 
         if ($user->role == "operator_cctv") {

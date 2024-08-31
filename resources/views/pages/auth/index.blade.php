@@ -1,83 +1,94 @@
-@extends('layouts.auth')
-@section('title', $title)
-@section('content')
-    <div
-        class="login-aside w-50 d-flex flex-column align-items-center justify-content-center text-center bg-secondary-gradient">
-        <h1 class="title fw-bold text-white mb-3">DASHBOARD MONITORING CCTV</h1>
-        <p class="subtitle text-white op-7">{{ $description }}</p>
-        <a href="{{ url('/') }}/file/apk/com.pip.cctvpip.apk" class="btn btn-secondary" target="_blank">Download APK</a>
-    </div>
-    <div class="login-aside w-50 d-flex align-items-center justify-content-center bg-white">
-        <div class="container container-login container-transparent animated fadeIn">
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin cctv PIP</title>
+    <!-- <link rel="stylesheet" href="css/style.css">-->
+    <link rel="stylesheet" href="{{ asset('auth/css/styles.css') }}" rel="stylesheet">
+    <style>
+        body,
+        html {
+            width: 100%;
+        }
+
+        .bg {
+            /* The image used */
+            background-image: url("{{ asset('auth/images/bgpattern.jpg') }}");
+
+            /* Full height */
+            height: 100%;
+
+            /* Center and scale the image nicely */
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+    </style>
+</head>
+
+<body class="bg">
+    <!--Google Font - Work Sans-->
+    <link href='https://fonts.googleapis.com/css?family=Work+Sans:400,300,700' rel='stylesheet' type='text/css'>
+
+    <div class="container">
+        <div class="profile">
+            <button class="profile__avatar" id="toggleProfile">
+                <img style="height:170px" src="{{ asset('auth/images/logo.png') }}" alt="Avatar" />
+            </button>
             <form id="formLogin">
-                <h3 class="text-center">Login untuk mengelola website</h3>
-                <div class="login-form">
-                    <div class="form-group">
-                        <label for="username" class="placeholder"><b>Username</b></label>
-                        <input id="username" name="username" type="text" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password" class="placeholder"><b>Password</b></label>
-                        <div class="position-relative">
-                            <input id="password" name="password" type="password" class="form-control" required>
-                            <div class="show-password">
-                                <i class="icon-eye"></i>
-                            </div>
+                <div class="profile__form">
+                    <div class="profile__fields">
+                        <div class="field">
+                            <input type="text" id="username" name="username" placeholder="Username" class="input"
+                                required pattern=.*\S.* />
+                        </div>
+                        <div class="field">
+                            <input type="password" id="password" name="password" placeholder="Password" class="input"
+                                required pattern=.*\S.* />
+                        </div>
+                        <div class="field">
+                            <div class="g-recaptcha" data-sitekey="{{ env('recaptcha2.key') }}"></div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <div class="g-recaptcha" data-sitekey="{{ env('recaptcha2.key') }}"></div>
+                    <div class="profile__footer">
+                        <button type="submit" name="submit" class="btn">Log in</button>
                     </div>
-                    <div class="form-group form-action-d-flex mb-3">
-                        {{-- <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="rememberme">
-                            <label class="custom-control-label m-0" for="rememberme">Remember Me</label>
-                        </div> --}}
-                        <button type="submit" class="btn btn-secondary col-md-5 float-right mt-3 mt-sm-0 fw-bold">
-                            Log In
-                        </button>
-                    </div>
-                    {{-- <div class="login-account">
-                        <span class="msg">Belum punya akun ?</span>
-                        <a href="#" id="show-signup" class="link">Register</a>
-                    </div> --}}
-                </div>
             </form>
         </div>
     </div>
-@endsection
-@push('scripts')
+    <script src="{{ asset('dashboard/js/core/jquery.3.2.1.min.js') }}"></script>
+    <script src="{{ asset('dashboard/js/plugin/jquery-ui-1.12.1.custom/jquery-ui.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script>
+        document.getElementById('toggleProfile').addEventListener('click', function() {
+            [].map.call(document.querySelectorAll('.profile'), function(el) {
+                el.classList.toggle('profile--open');
+            });
+        });
+
         $("#formLogin").submit(function(e) {
             e.preventDefault();
 
             let captchaResponse = grecaptcha.getResponse();
             if (!captchaResponse) {
-                showMessage("danger", "flaticon-error", "Peringatan", "Silakan selesaikan reCAPTCHA.");
+                Swal.fire({
+                    title: 'Peringatan',
+                    text: "Silakan selesaikan reCAPTCHA.",
+                    icon: 'error',
+                    confirmButtonText: 'Tutup'
+                });
                 return;
             }
 
             let dataToSend = $(this).serialize() + "&g-recaptcha-response=" + captchaResponse;
-            submitAuth(dataToSend, "login");
+            submitAuth(dataToSend);
             return false;
         })
 
-        $("#formRegister").submit(function(e) {
-            e.preventDefault();
-
-            const agree = $("#agree").prop('checked');
-            let dataToSend = $(this).serialize();
-            if (agree) {
-                submitAuth(dataToSend, "register")
-            } else {
-                showMessage("danger", "flaticon-error", "Peringatan",
-                    "Tolong lengkapi data persetujuan syarat dan ketentuan")
-            }
-            return false;
-        })
-
-        function submitAuth(data, type) {
+        function submitAuth(data) {
             $.ajax({
                 url: "/api/auth/login/validate",
                 method: "POST",
@@ -86,24 +97,31 @@
                     console.log("Loading...")
                 },
                 success: function(res) {
-                    showMessage("success", "flaticon-alarm-1", "Sukses", res.message);
-                    if (res.message == "Login Sukses") {
-                        setTimeout(() => {
-                            window.location.href = "{{ route('dashboard') }}"
-                        }, 1500)
-                    } else {
-                        // setTimeout(() => {
+                    Swal.fire({
+                        title: 'Selamat',
+                        text: res.message,
+                        icon: 'success',
+                        confirmButtonText: 'Tutup'
+                    });
+                    setTimeout(() => {
+                        window.location.href = "{{ route('dashboard') }}"
+                    }, 1500)
 
-                        //     location.reload();
-                        // }, 1500)
-                    }
                 },
                 error: function(err) {
                     console.log("error :", err)
-                    showMessage("danger", "flaticon-error", "Peringatan", err.message || err.responseJSON
-                        ?.message);
+                    Swal.fire({
+                        title: 'Peringatan',
+                        text: err.message || err.responseJSON
+                            ?.message,
+                        icon: 'error',
+                        confirmButtonText: 'Tutup'
+                    });
                 }
             })
         }
     </script>
-@endpush
+
+</body>
+
+</html>

@@ -54,10 +54,11 @@
         @include('partials.dashboard.sidebar')
 
         <div class="main-panel"
-            style="background-image: url('{{ asset('dashboard/img/background.jpg') }}');  background-size: cover; 
+            {{-- style="background-image: url('{{ asset('dashboard/img/background.jpg') }}');  background-size: cover; 
             background-position: center; 
             background-repeat: no-repeat; 
-            height: 100vh;">
+            height: 100vh;" --}}
+            >
             <div class="container">
                 <div class="page-inner mt-5">
                     @yield('content')

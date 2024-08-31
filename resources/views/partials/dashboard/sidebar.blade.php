@@ -51,6 +51,12 @@
                         <p>Setting Account</p>
                     </a>
                 </li>
+                <li class="nav-item ml-3">
+                    <a href="{{ url('/') }}/file/apk/com.pip.cctvpip.apk" target="__blank">
+                        <i class="fas fa-download"></i>
+                        <p>Download APK</p>
+                    </a>
+                </li>
                 @if ($user->role != 'operator_cctv')
                     <li class="nav-item ml-3 {{ $routename == 'user' ? 'active' : '' }}">
                         <a href="{{ route('user') }}">

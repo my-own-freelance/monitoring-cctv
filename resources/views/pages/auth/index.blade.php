@@ -54,6 +54,10 @@
                     <div class="profile__footer">
                         <button type="submit" name="submit" class="btn">Log in</button>
                     </div>
+                    <button class="btn" style="margin:10px auto; display:block;">
+                        <a href="{{ url('/') }}/file/apk/com.pip.cctvpip.apk" style="text-decoration: none; color:white;" target="_blank">Download APK</a>
+                    </button>
+
             </form>
         </div>
     </div>

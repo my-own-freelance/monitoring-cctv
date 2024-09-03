@@ -36,8 +36,8 @@
             <button class="profile__avatar" id="toggleProfile">
                 <img style="height:170px" src="{{ asset('auth/images/logo.png') }}" alt="Avatar" />
             </button>
-            <form id="formLogin">
-                <div class="profile__form">
+            <div class="profile__form">
+                <form id="formLogin">
                     <div class="profile__fields">
                         <div class="field">
                             <input type="text" id="username" name="username" placeholder="Username" class="input"
@@ -54,11 +54,12 @@
                     <div class="profile__footer">
                         <button type="submit" name="submit" class="btn">Log in</button>
                     </div>
-            </form>
-            <button class="btn" style="margin:10px auto; display:block;">
-                <a href="{{ url('/') }}/file/apk/com.pip.cctvpip.apk" style="text-decoration: none; color:white;"
-                    target="_blank">Download test</a>
-            </button>
+                </form>
+                <button class="btn" style="margin:10px auto; display:block;">
+                    <a href="{{ url('/') }}/file/apk/com.pip.cctvpip.apk"
+                        style="text-decoration: none; color:white;" target="_blank">Download APK</a>
+                </button>
+            </div>
         </div>
     </div>
     <script src="{{ asset('dashboard/js/core/jquery.3.2.1.min.js') }}"></script>

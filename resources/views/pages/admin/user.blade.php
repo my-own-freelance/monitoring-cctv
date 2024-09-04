@@ -194,20 +194,21 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-4" id="excludeCctv" style="display: none">
+                                <div class="col-md-4" id="multyCctv" style="display: none">
                                     <div class="form-group">
-                                        <label for="exclude_cctv_id">CCTV Di Kecualikan</label>
+                                        <label for="multy_cctv_id">Pilih Cctv (optional)</label>
                                         <div class="select2-input">
-                                            <select id="exclude_cctv_id" name="multiple[]"
+                                            <select id="multy_cctv_id" name="multiple[]"
                                                 class="form-control select2-hidden-accessible" multiple=""
                                                 data-select2-id="multiple" tabindex="-1" aria-hidden="true">
-                                                <option value="">Pilih Cctv</option>
                                                 @forelse ($cctvs as $cctv)
                                                     <option value="{{ $cctv->id }}">{{ $cctv->name }}</option>
                                                 @empty
                                                 @endforelse
                                             </select>
                                         </div>
+                                        <small class="text-warning">isi hanya ketika anda ingin memberikan akses ke
+                                            beberapa cctv saja</small>
                                     </div>
                                 </div>
                                 <div class="col-md-2">
@@ -250,7 +251,7 @@
         let dTable = null;
         let dTableUserCctv = null;
 
-        $('#building_id,#floor_id,#cctv_id,#exclude_cctv_id').select2({
+        $('#building_id,#floor_id,#cctv_id,#multy_cctv_id').select2({
             theme: "bootstrap"
         });
 
@@ -528,8 +529,8 @@
             if (building_id == "all") {
                 $("#fFloor").slideUp(200, function() {
                     $("#fCctv").slideUp(200, function() {
-                        $("#excludeCctv").fadeIn(200, function() {
-                            $('#exclude_cctv_id').val([]).trigger('change');
+                        $("#multyCctv").fadeIn(200, function() {
+                            $('#multy_cctv_id').val([]).trigger('change');
                         });
                     });
                 });
@@ -541,8 +542,8 @@
                 //     "<option value ='all' selected>(FULL AKSES)</option > ");
             } else {
                 getFloorList(building_id);
-                $('#exclude_cctv_id').val([]).trigger('change');
-                $("#excludeCctv").slideUp(200, function() {
+                $('#multy_cctv_id').val([]).trigger('change');
+                $("#multyCctv").slideUp(200, function() {
                     $("#fFloor").fadeIn(200)
                     $("#fCctv").fadeIn(200);
                 })
@@ -621,7 +622,7 @@
             formData.append("user_id", parseInt($("#user_id").val()));
             formData.append("cctv_id", cctv_id);
             formData.append("all_access", all_access);
-            formData.append("exclude_cctv_ids", JSON.stringify($("#exclude_cctv_id").val()));
+            formData.append("multy_cctv_ids", JSON.stringify($("#multy_cctv_id").val()));
 
             saveDataUserCctv(formData, $("#formEditable").attr("data-action"));
             return false;

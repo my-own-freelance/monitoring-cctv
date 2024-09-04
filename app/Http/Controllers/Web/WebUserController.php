@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Http\Services\UserService;
 use App\Models\Building;
+use App\Models\Cctv;
 use Illuminate\Http\Request;
 
 class WebUserController extends Controller
@@ -20,11 +21,12 @@ class WebUserController extends Controller
     {
         $title = "Data Pengguna";
         $buildings = Building::orderBy("name", "asc")->get();
+        $cctvs = Cctv::orderBy("name", "asc")->get();
         $user = Auth()->user();
         if ($user->role == "operator_cctv") {
             return redirect()->route("dashboard");
         }
-        return view("pages.admin.user", compact('title', 'buildings', 'user'));
+        return view("pages.admin.user", compact('title', 'buildings', 'cctvs', 'user'));
     }
 
     // HANDLER API

@@ -111,7 +111,8 @@ class UserCctvService
             $rules = [
                 "user_id" => "required|integer",
                 "cctv_id" => "required|integer",
-                "all_access" => "required|string|in:Y,N"
+                "all_access" => "required|string|in:Y,N",
+                "exclude_cctv_ids" => "nullable|string"
             ];
 
             $messages = [
@@ -120,6 +121,7 @@ class UserCctvService
                 "cctv_id.required" => "Data Cctv harus diisi",
                 "cctv_id.integer" => "Data Cctv tidak valid",
                 "all_access.in" => "Pengaturan all access tidak valid",
+                "exclude_cctv_ids.string" => "Format cctv dikecualikan tidak valid"
             ];
 
             $validator = Validator::make($data, $rules, $messages);
@@ -142,7 +144,12 @@ class UserCctvService
             // ada fitur baru dimana superadmin bisa melakukan set akses cctv kepada oprator cctv untuk all access ke semua cctv
             if ($data["all_access"] == "Y") {
                 $existingUserCctv = UserCctv::where("user_id", $data["user_id"])->pluck("cctv_id")->toArray();
-                $newCctvData = Cctv::whereNotIn("id", $existingUserCctv)->get();
+                $excludeCctvIds = [];
+                if (isset($data['exclude_cctv_ids'])) {
+                    $excludeCctvIds = json_decode($data['exclude_cctv_ids'], true);
+                }
+                $mergedExcludeCctv = array_merge($existingUserCctv, $excludeCctvIds);
+                $newCctvData = Cctv::whereNotIn("id", $mergedExcludeCctv)->get();
 
                 $newData = [];
                 $timestamp = now();

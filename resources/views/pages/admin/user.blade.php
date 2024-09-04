@@ -2,6 +2,11 @@
 @section('title', $title)
 @push('styles')
     <link rel="stylesheet" href="{{ asset('dashboard/css/toggle-status.css') }}">
+    <style>
+        .select2-selection__choice__remove {
+            margin-top: -2px !important;
+        }
+    </style>
 @endpush
 @section('content')
     <div class="row mb-5">
@@ -171,7 +176,7 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-2" id="fFloor">
                                     <div class="form-group">
                                         <label for="floor_id">Area Lantai</label>
                                         <select class="form-control form-control" id="floor_id" name="floor_id">
@@ -180,13 +185,29 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-2" id="fCctv">
                                     <div class="form-group">
                                         <label for="cctv_id">Area CCTV</label>
                                         <select class="form-control form-control" id="cctv_id" name="cctv_id">
                                             <option value = "">Pilih Cctv</option>
                                             {{-- request by api based on building area --}}
                                         </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4" id="excludeCctv" style="display: none">
+                                    <div class="form-group">
+                                        <label for="exclude_cctv_id">CCTV Di Kecualikan</label>
+                                        <div class="select2-input">
+                                            <select id="exclude_cctv_id" name="multiple[]"
+                                                class="form-control select2-hidden-accessible" multiple=""
+                                                data-select2-id="multiple" tabindex="-1" aria-hidden="true">
+                                                <option value="">Pilih Cctv</option>
+                                                @forelse ($cctvs as $cctv)
+                                                    <option value="{{ $cctv->id }}">{{ $cctv->name }}</option>
+                                                @empty
+                                                @endforelse
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-2">
@@ -229,7 +250,7 @@
         let dTable = null;
         let dTableUserCctv = null;
 
-        $('#building_id,#floor_id,#cctv_id').select2({
+        $('#building_id,#floor_id,#cctv_id,#exclude_cctv_id').select2({
             theme: "bootstrap"
         });
 
@@ -505,10 +526,26 @@
         $("#building_id").change(function() {
             let building_id = $(this).val();
             if (building_id == "all") {
-                $("#floor_id").empty().attr("disabled", true).append("<option value ='all' selected>(FULL AKSES)</option > ");
-                $("#cctv_id").empty().attr("disabled", true).append("<option value ='all' selected>(FULL AKSES)</option > ");
+                $("#fFloor").slideUp(200, function() {
+                    $("#fCctv").slideUp(200, function() {
+                        $("#excludeCctv").fadeIn(200, function() {
+                            $('#exclude_cctv_id').val([]).trigger('change');
+                        });
+                    });
+                });
+
+
+                // $("#floor_id").empty().attr("disabled", true).append(
+                //     "<option value ='all' selected>(FULL AKSES)</option > ");
+                // $("#cctv_id").empty().attr("disabled", true).append(
+                //     "<option value ='all' selected>(FULL AKSES)</option > ");
             } else {
                 getFloorList(building_id);
+                $('#exclude_cctv_id').val([]).trigger('change');
+                $("#excludeCctv").slideUp(200, function() {
+                    $("#fFloor").fadeIn(200)
+                    $("#fCctv").fadeIn(200);
+                })
                 // reset cctv
                 $("#cctv_id").attr("disabled", false).empty().append("<option value =''>Pilih Cctv</option > ");
                 $("#floor_id").attr("disabled", false)
@@ -578,12 +615,13 @@
 
         $("#formUserCctv form").submit(function(e) {
             e.preventDefault();
-            let all_access = $("#cctv_id").val() == "all" ? "Y" : "N";
+            let all_access = $("#building_id").val() == "all" ? "Y" : "N";
             let cctv_id = all_access == "Y" ? 0 : parseInt($("#cctv_id").val());
             let formData = new FormData();
             formData.append("user_id", parseInt($("#user_id").val()));
             formData.append("cctv_id", cctv_id);
             formData.append("all_access", all_access);
+            formData.append("exclude_cctv_ids", JSON.stringify($("#exclude_cctv_id").val()));
 
             saveDataUserCctv(formData, $("#formEditable").attr("data-action"));
             return false;

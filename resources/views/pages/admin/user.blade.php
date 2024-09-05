@@ -344,8 +344,8 @@
                 $("#reset").click();
                 $("#formUserCctv").slideUp(200)
             })
-            $('#building_id').prop('selectedIndex', 0).change();
-            $('#floor_id').prop('selectedIndex', 0).change();
+            $('#building_id').val("")
+            $('#floor_id').val("")
             $('#cctv_list .list-group').html('');
         }
 
@@ -635,7 +635,7 @@
                             `<li class="list-group-item cctv-item ${existingCctvIds.includes(r.id) ? 'selected' : ''}" data-cctv-id="${r.id}">${r.name}</li>`;
                     });
                     $('#cctv_list .list-group').html(cctvList);
-                    if (isAllAccess) {
+                    if (isAllAccess && existingCctvIds.length > 0) {
                         $('#cctv_items .list-group-item.all-cctv')
                             .addClass('selected');
                     }

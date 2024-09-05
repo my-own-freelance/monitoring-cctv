@@ -53,8 +53,11 @@ class UserCctvService
         $recordsFiltered = $query->count();
 
         // optional filter skip limit
-        if ($request->query('start') && $request->query('length')) {
-            $query->skip($request->query('start'))->limit($request->query('length'));
+        if ($request->query('start') !== null && $request->query('length') !== null) {
+            $start = (int) $request->query('start');
+            $length = (int) $request->query('length');
+            
+            $query->skip($start)->limit($length);
         }
 
         $data = $query->orderBy('created_at', 'desc')

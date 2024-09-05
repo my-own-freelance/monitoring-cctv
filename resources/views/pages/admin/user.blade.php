@@ -6,6 +6,36 @@
         .select2-selection__choice__remove {
             margin-top: -2px !important;
         }
+
+        #cctv_button {
+            height: calc(2.25rem + 2px);
+            border-radius: 0.25rem;
+            border: 1px solid #ced4da;
+            background-color: #ffffff;
+            color: #495057;
+            text-align: left;
+            margin-top: 5px;
+        }
+
+        .cctv-item.selected {
+            background-color: rgb(115, 244, 89);
+            /* Warna hijau untuk item yang dipilih */
+        }
+
+        #cctv_list {
+            position: absolute;
+            background-color: white;
+            width: 100%;
+            border: 1px solid #ddd;
+            max-height: 350px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        #cctv_list .list-group-item {
+            cursor: pointer;
+            padding: 10px;
+        }
     </style>
 @endpush
 @section('content')
@@ -164,7 +194,7 @@
                                             readonly />
                                     </div>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                         <label for="building_id">Area Gedung</label>
                                         <select class="form-control form-control" id="building_id" name="building_id">
@@ -176,7 +206,7 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-2" id="fFloor">
+                                <div class="col-md-3" id="fFloor">
                                     <div class="form-group">
                                         <label for="floor_id">Area Lantai</label>
                                         <select class="form-control form-control" id="floor_id" name="floor_id">
@@ -185,36 +215,22 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-2" id="fCctv">
+                                <div class="col-md-3">
                                     <div class="form-group">
-                                        <label for="cctv_id">Area CCTV</label>
-                                        <select class="form-control form-control" id="cctv_id" name="cctv_id">
-                                            <option value = "">Pilih Cctv</option>
-                                            {{-- request by api based on building area --}}
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-4" id="multyCctv" style="display: none">
-                                    <div class="form-group">
-                                        <label for="multy_cctv_id">Pilih Cctv (optional)</label>
-                                        <div class="select2-input">
-                                            <select id="multy_cctv_id" name="multiple[]"
-                                                class="form-control select2-hidden-accessible" multiple=""
-                                                data-select2-id="multiple" tabindex="-1" aria-hidden="true">
-                                                @forelse ($cctvs as $cctv)
-                                                    <option value="{{ $cctv->id }}">{{ $cctv->name }}</option>
-                                                @empty
-                                                @endforelse
-                                            </select>
+                                        <label for="cctv_button">Area CCTV</label>
+                                        <div class="dropdown">
+                                            <button class="btn form-control dropdown-toggle" id="cctv_button"
+                                                type="button">
+                                                Pilih CCTV
+                                            </button>
+                                            <div class="dropdown-menu" id="cctv_list" style="display: none;">
+                                                <input type="text" class="form-control mb-2" id="cctv_search"
+                                                    placeholder="Cari CCTV">
+                                                <ul class="list-group" id="cctv_items">
+                                                    <!-- List CCTV akan di-render di sini -->
+                                                </ul>
+                                            </div>
                                         </div>
-                                        <small class="text-warning">isi hanya ketika anda ingin memberikan akses ke
-                                            beberapa cctv saja</small>
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="pt-4">
-                                        <button class="mt-4 btn btn-sm btn-success mr-3" type="submit">Tambah
-                                            Akses</button>
                                     </div>
                                 </div>
                             </div>
@@ -328,6 +344,9 @@
                 $("#reset").click();
                 $("#formUserCctv").slideUp(200)
             })
+            $('#building_id').prop('selectedIndex', 0).change();
+            $('#floor_id').prop('selectedIndex', 0).change();
+            $('#cctv_list .list-group').html('');
         }
 
         function getData(id) {
@@ -527,29 +546,16 @@
         $("#building_id").change(function() {
             let building_id = $(this).val();
             if (building_id == "all") {
-                $("#fFloor").slideUp(200, function() {
-                    $("#fCctv").slideUp(200, function() {
-                        $("#multyCctv").fadeIn(200, function() {
-                            $('#multy_cctv_id').val([]).trigger('change');
-                        });
-                    });
+                $("#floor_id").empty().attr("disabled", true).append(
+                    "<option value ='all' selected>(FULL AKSES)</option > ");
+                let userId = $("#user_id").val();
+                getExistingCctvIds(userId).then(function(existingCctvIds) {
+                    getCctvList(null, existingCctvIds);
                 });
-
-
-                // $("#floor_id").empty().attr("disabled", true).append(
-                //     "<option value ='all' selected>(FULL AKSES)</option > ");
-                // $("#cctv_id").empty().attr("disabled", true).append(
-                //     "<option value ='all' selected>(FULL AKSES)</option > ");
             } else {
                 getFloorList(building_id);
-                $('#multy_cctv_id').val([]).trigger('change');
-                $("#multyCctv").slideUp(200, function() {
-                    $("#fFloor").fadeIn(200)
-                    $("#fCctv").fadeIn(200);
-                })
-                // reset cctv
-                $("#cctv_id").attr("disabled", false).empty().append("<option value =''>Pilih Cctv</option > ");
                 $("#floor_id").attr("disabled", false)
+                $('#cctv_list .list-group').html('');
             }
         })
 
@@ -583,10 +589,33 @@
 
         $("#floor_id").change(function() {
             let floor_id = $(this).val();
-            getCctvList(floor_id);
+            let userId = $("#user_id").val();
+            getExistingCctvIds(userId).then(function(existingCctvIds) {
+                getCctvList(floor_id, existingCctvIds);
+            });
         })
 
-        function getCctvList(floor_id) {
+        function getExistingCctvIds(id) {
+            return $.ajax({
+                url: `/api/admin/user-cctv/datatable?user_id=${id}`,
+                method: "GET",
+                header: {
+                    "Content-Type": "application/json"
+                },
+                beforeSend: function() {
+                    console.log("Sending data...!")
+                }
+            }).then(function(res) {
+                let data = res.data;
+                let cctvIds = data.map((d) => d.cctv_id);
+                return cctvIds;
+            }).catch(function(err) {
+                console.log("error :", err);
+                return [];
+            });
+        }
+
+        function getCctvList(floor_id, existingCctvIds) {
             $.ajax({
                 url: `/api/admin/cctv/list?floor_id=${floor_id}`,
                 method: "GET",
@@ -597,54 +626,17 @@
                     console.log("Sending data...!")
                 },
                 success: function(res) {
-                    // update input form
-                    $("#cctv_id").empty();
-                    $('#cctv_id').append("<option value =''>Pilih Cctv</option > ");
+                    let cctvList = '';
                     $.each(res.data, function(index, r) {
-                        $('#cctv_id').append("<option value = '" + r.id + "' > " + r
-                            .name + " </option > ");
-                    })
+                        cctvList +=
+                            `<li class="list-group-item cctv-item ${existingCctvIds.includes(r.id) ? 'selected' : ''}" data-cctv-id="${r.id}">${r.name}</li>`;
+                    });
+                    $('#cctv_list .list-group').html(cctvList);
                 },
                 error: function(err) {
                     console.log("error :", err);
                     showMessage("danger", "flaticon-error", "Peringatan", err.message || err
                         .responseJSON
-                        ?.message);
-                }
-            })
-        }
-
-        $("#formUserCctv form").submit(function(e) {
-            e.preventDefault();
-            let all_access = $("#building_id").val() == "all" ? "Y" : "N";
-            let cctv_id = all_access == "Y" ? 0 : parseInt($("#cctv_id").val());
-            let formData = new FormData();
-            formData.append("user_id", parseInt($("#user_id").val()));
-            formData.append("cctv_id", cctv_id);
-            formData.append("all_access", all_access);
-            formData.append("multy_cctv_ids", JSON.stringify($("#multy_cctv_id").val()));
-
-            saveDataUserCctv(formData, $("#formEditable").attr("data-action"));
-            return false;
-        });
-
-        function saveDataUserCctv(data, action) {
-            $.ajax({
-                url: "/api/admin/user-cctv/create",
-                contentType: false,
-                processData: false,
-                method: "POST",
-                data: data,
-                beforeSend: function() {
-                    console.log("Loading...")
-                },
-                success: function(res) {
-                    showMessage("success", "flaticon-alarm-1", "Sukses", res.message);
-                    refreshDataUserCctv();
-                },
-                error: function(err) {
-                    console.log("error :", err);
-                    showMessage("danger", "flaticon-error", "Peringatan", err.message || err.responseJSON
                         ?.message);
                 }
             })
@@ -674,5 +666,92 @@
                 })
             }
         }
+
+        $('#cctv_button').click(function(event) {
+            event.stopPropagation(); // Mencegah penutupan langsung setelah tombol diklik
+            $('#cctv_list').toggle(); // Menampilkan atau menyembunyikan dropdown CCTV
+        });
+
+        $(document).click(function(event) {
+            let target = $(event.target);
+            if (!target.closest('#cctv_button').length && !target.closest('#cctv_list').length) {
+                $('#cctv_list').hide(); // Sembunyikan dropdown jika klik di luar
+            }
+        });
+
+        // klik salah satu list cctv untk menambahkan akses
+        $(document).ready(function() {
+            $(document).on('click', '.cctv-item', function(event) {
+                event.stopPropagation(); // Jangan menutup dropdown
+
+                // Ambil ID CCTV dari data attribute
+                let cctvId = parseInt($(this).data('cctv-id'));
+                let userId = parseInt($("#user_id").val());
+                let formData = new FormData();
+                formData.append("user_id", userId);
+                formData.append("cctv_id", cctvId);
+
+                // Periksa apakah item sudah dipilih
+                if ($(this).hasClass('selected')) {
+                    $.ajax({
+                        url: "/api/admin/user-cctv/delete-by-data",
+                        contentType: false,
+                        processData: false,
+                        method: "POST",
+                        data: formData,
+                        beforeSend: function() {
+                            console.log("Loading...")
+                        },
+                        success: function(res) {
+                            $(`li[data-cctv-id="${cctvId}"]`).removeClass('selected');
+                            showMessage("success", "flaticon-alarm-1", "Sukses", res.message);
+                            refreshDataUserCctv();
+                        },
+                        error: function(err) {
+                            console.log("error :", err);
+                            showMessage("danger", "flaticon-error", "Peringatan", err.message ||
+                                err.responseJSON
+                                ?.message);
+                        }
+                    });
+                } else {
+                    // Jika belum dipilih, tambahkan akses dan tambahkan kelas 'selected'
+                    $.ajax({
+                        url: "/api/admin/user-cctv/create",
+                        contentType: false,
+                        processData: false,
+                        method: "POST",
+                        data: formData,
+                        beforeSend: function() {
+                            console.log("Loading...")
+                        },
+                        success: function(res) {
+                            $(`li[data-cctv-id="${cctvId}"]`).addClass('selected');
+                            showMessage("success", "flaticon-alarm-1", "Sukses", res.message);
+                            refreshDataUserCctv();
+                        },
+                        error: function(err) {
+                            console.log("error :", err);
+                            showMessage("danger", "flaticon-error", "Peringatan", err.message ||
+                                err.responseJSON
+                                ?.message);
+                        }
+                    });
+                }
+            });
+        });
+
+        // Pencarian dalam daftar CCTV
+        $("#cctv_search").on('input', function() {
+            let searchTerm = $(this).val().toLowerCase();
+            $("#cctv_items .cctv-item").each(function() {
+                let cctvName = $(this).text().toLowerCase();
+                if (cctvName.includes(searchTerm)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
     </script>
 @endpush

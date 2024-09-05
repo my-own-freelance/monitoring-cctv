@@ -204,6 +204,7 @@ Route::prefix("admin")->namespace("admin")->middleware(["check.auth"])->group(fu
         Route::middleware("check.role:superadmin")->group(function () {
             Route::post("/create", [WebUserCctvController::class, "create"]);
             Route::delete("/delete", [WebUserCctvController::class, "destroy"]);
+            Route::post("/delete-by-data", [WebUserCctvController::class, "destroyByData"]);
         });
         Route::get("/datatable", [WebUserCctvController::class, "dataTable"]);
     });

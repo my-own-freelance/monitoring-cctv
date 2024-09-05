@@ -52,9 +52,12 @@ class UserCctvService
 
         $recordsFiltered = $query->count();
 
+        // optional filter skip limit
+        if ($request->query('start') && $request->query('length')) {
+            $query->skip($request->query('start'))->limit($request->query('length'));
+        }
+
         $data = $query->orderBy('created_at', 'desc')
-            ->skip($request->query('start'))
-            ->limit($request->query('length'))
             ->get();
 
         $output = $data->map(function ($item) {
@@ -111,8 +114,8 @@ class UserCctvService
             $rules = [
                 "user_id" => "required|integer",
                 "cctv_id" => "required|integer",
-                "all_access" => "required|string|in:Y,N",
-                "multy_cctv_ids" => "nullable|string"
+                // "all_access" => "required|string|in:Y,N",
+                // "multy_cctv_ids" => "nullable|string"
             ];
 
             $messages = [
@@ -120,8 +123,8 @@ class UserCctvService
                 "user_id.integer" => "Data User tidak valid",
                 "cctv_id.required" => "Data Cctv harus diisi",
                 "cctv_id.integer" => "Data Cctv tidak valid",
-                "all_access.in" => "Pengaturan all access tidak valid",
-                "multy_cctv_ids.string" => "Data multi cctv tidak valid"
+                // "all_access.in" => "Pengaturan all access tidak valid",
+                // "multy_cctv_ids.string" => "Data multi cctv tidak valid"
             ];
 
             $validator = Validator::make($data, $rules, $messages);
@@ -141,41 +144,41 @@ class UserCctvService
                 ], 404);
             }
 
-            // ada fitur baru dimana superadmin bisa melakukan set akses cctv kepada oprator cctv untuk all access ke semua cctv
-            if ($data["all_access"] == "Y") {
-                $existingUserCctv = UserCctv::where("user_id", $data["user_id"])->pluck("cctv_id")->toArray();
+            // // ada fitur baru dimana superadmin bisa melakukan set akses cctv kepada oprator cctv untuk all access ke semua cctv
+            // if ($data["all_access"] == "Y") {
+            //     $existingUserCctv = UserCctv::where("user_id", $data["user_id"])->pluck("cctv_id")->toArray();
 
-                $newCctvData = Cctv::whereNotIn("id", $existingUserCctv);
+            //     $newCctvData = Cctv::whereNotIn("id", $existingUserCctv);
 
-                if (isset($data['multy_cctv_ids'])) {
-                    $multyCctvIds = json_decode($data['multy_cctv_ids'], true);
-                    if (count($multyCctvIds) > 0) {
-                        $newCctvData->whereIn("id", $multyCctvIds);
-                    }
-                }
+            //     if (isset($data['multy_cctv_ids'])) {
+            //         $multyCctvIds = json_decode($data['multy_cctv_ids'], true);
+            //         if (count($multyCctvIds) > 0) {
+            //             $newCctvData->whereIn("id", $multyCctvIds);
+            //         }
+            //     }
 
-                $newCctvData = $newCctvData->get();
+            //     $newCctvData = $newCctvData->get();
 
-                $newData = [];
-                $timestamp = now();
-                foreach ($newCctvData as $cctv) {
-                    $newData[] = [
-                        "user_id" => $data["user_id"],
-                        "cctv_id" => $cctv->id,
-                        "created_at" => $timestamp,
-                        "updated_at" => $timestamp
-                    ];
-                }
+            //     $newData = [];
+            //     $timestamp = now();
+            //     foreach ($newCctvData as $cctv) {
+            //         $newData[] = [
+            //             "user_id" => $data["user_id"],
+            //             "cctv_id" => $cctv->id,
+            //             "created_at" => $timestamp,
+            //             "updated_at" => $timestamp
+            //         ];
+            //     }
 
-                if (!empty($newData)) {
-                    UserCctv::insert($newData);
-                }
+            //     if (!empty($newData)) {
+            //         UserCctv::insert($newData);
+            //     }
 
-                return response()->json([
-                    "status" => "success",
-                    "message" => "Berhasil menambahkan akses ke seluruh cctv"
-                ]);
-            }
+            //     return response()->json([
+            //         "status" => "success",
+            //         "message" => "Berhasil menambahkan akses ke seluruh cctv"
+            //     ]);
+            // }
 
             // cek data cctv
             $existingCctv = Cctv::find($data["cctv_id"]);
@@ -225,6 +228,53 @@ class UserCctvService
 
             $id = $request->id;
             $userCctv = UserCctv::find($id);
+            if (!$userCctv) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "Data tidak ditemukan"
+                ], 404);
+            }
+
+            $userCctv->delete();
+            return response()->json([
+                "status" => "success",
+                "message" => "Data berhasil dihapus"
+            ]);
+        } catch (\Exception $err) {
+            return response()->json([
+                "status" => "error",
+                "message" => $err->getMessage()
+            ], 500);
+        }
+    }
+
+    public function destroyByData($request)
+    {
+        try {
+
+            $data = $request->all();
+            $rules = [
+                "user_id" => "required|integer",
+                "cctv_id" => "required|integer",
+            ];
+
+            $messages = [
+                "user_id.required" => "Data User tidak valid",
+                "user_id.integer" => "Data User tidak valid",
+                "cctv_id.required" => "Data Cctv harus diisi",
+                "cctv_id.integer" => "Data Cctv tidak valid",
+            ];
+
+            $validator = Validator::make($data, $rules, $messages);
+            if ($validator->fails()) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => $validator->errors()->first(),
+                    'data' => $data
+                ], 400);
+            }
+
+            $userCctv = UserCctv::where('user_id', $data["user_id"])->where("cctv_id", $data['cctv_id'])->first();
             if (!$userCctv) {
                 return response()->json([
                     "status" => "error",

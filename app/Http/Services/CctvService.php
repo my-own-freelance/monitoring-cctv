@@ -300,11 +300,11 @@ class CctvService
             }]);
 
             // jika tidak di filter by floor id, limit 100 data saja yg ditampilkan secara random
-            if ($request->has("floor_id")) {
+            if ($request->has("floor_id") && is_numeric($request->query('floor_id'))) {
                 $floor_id = $request->query("floor_id");
                 $query->where('floor_id', $floor_id);
             } else {
-                $query->limit(100);
+                // $query->limit(100);
             }
 
             $data = $query->orderBy("name", "asc")->get();

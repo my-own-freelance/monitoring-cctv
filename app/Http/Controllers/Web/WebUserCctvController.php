@@ -30,4 +30,9 @@ class WebUserCctvController extends Controller
     {
         return $this->userCctvService->destroy($request);
     }
+
+    public function destroyByData(Request $request)
+    {
+        return $this->userCctvService->destroyByData($request);
+    }
 }

@@ -42,21 +42,13 @@ class UserCctvService
             });
         }
 
-        // filter floor_id
-        if ($request->query("floor_id") && $request->query('floor_id') != "") {
-            $floor_id = $request->query("floor_id");
-            $query->where(function ($query) use ($floor_id) {
-                $query->where('floor_id', $floor_id);
-            });
-        }
-
         $recordsFiltered = $query->count();
 
         // optional filter skip limit
         if ($request->query('start') !== null && $request->query('length') !== null) {
             $start = (int) $request->query('start');
             $length = (int) $request->query('length');
-            
+
             $query->skip($start)->limit($length);
         }
 
@@ -117,7 +109,8 @@ class UserCctvService
             $rules = [
                 "user_id" => "required|integer",
                 "cctv_id" => "required|integer",
-                // "all_access" => "required|string|in:Y,N",
+                "floor_id" => "nullable|integer",
+                "all_access" => "required|string|in:Y,N",
                 // "multy_cctv_ids" => "nullable|string"
             ];
 
@@ -126,7 +119,8 @@ class UserCctvService
                 "user_id.integer" => "Data User tidak valid",
                 "cctv_id.required" => "Data Cctv harus diisi",
                 "cctv_id.integer" => "Data Cctv tidak valid",
-                // "all_access.in" => "Pengaturan all access tidak valid",
+                "floor_id.integer" => "Data Lantai tidak valid",
+                "all_access.in" => "Pengaturan all access tidak valid",
                 // "multy_cctv_ids.string" => "Data multi cctv tidak valid"
             ];
 
@@ -147,41 +141,45 @@ class UserCctvService
                 ], 404);
             }
 
-            // // ada fitur baru dimana superadmin bisa melakukan set akses cctv kepada oprator cctv untuk all access ke semua cctv
-            // if ($data["all_access"] == "Y") {
-            //     $existingUserCctv = UserCctv::where("user_id", $data["user_id"])->pluck("cctv_id")->toArray();
+            // ada fitur baru dimana superadmin bisa melakukan set akses cctv kepada oprator cctv untuk all access ke semua cctv
+            if ($data["all_access"] == "Y") {
+                $existingUserCctv = UserCctv::where("user_id", $data["user_id"])->pluck("cctv_id")->toArray();
 
-            //     $newCctvData = Cctv::whereNotIn("id", $existingUserCctv);
+                $newCctvData = Cctv::whereNotIn("id", $existingUserCctv);
 
-            //     if (isset($data['multy_cctv_ids'])) {
-            //         $multyCctvIds = json_decode($data['multy_cctv_ids'], true);
-            //         if (count($multyCctvIds) > 0) {
-            //             $newCctvData->whereIn("id", $multyCctvIds);
-            //         }
-            //     }
+                // if (isset($data['multy_cctv_ids'])) {
+                //     $multyCctvIds = json_decode($data['multy_cctv_ids'], true);
+                //     if (count($multyCctvIds) > 0) {
+                //         $newCctvData->whereIn("id", $multyCctvIds);
+                //     }
+                // }
 
-            //     $newCctvData = $newCctvData->get();
+                if (isset($data['floor_id']) && $data['floor_id'] != 0) {
+                    $newCctvData->where("floor_id", $data['floor_id']);
+                }
 
-            //     $newData = [];
-            //     $timestamp = now();
-            //     foreach ($newCctvData as $cctv) {
-            //         $newData[] = [
-            //             "user_id" => $data["user_id"],
-            //             "cctv_id" => $cctv->id,
-            //             "created_at" => $timestamp,
-            //             "updated_at" => $timestamp
-            //         ];
-            //     }
+                $newCctvData = $newCctvData->get();
 
-            //     if (!empty($newData)) {
-            //         UserCctv::insert($newData);
-            //     }
+                $newData = [];
+                $timestamp = now();
+                foreach ($newCctvData as $cctv) {
+                    $newData[] = [
+                        "user_id" => $data["user_id"],
+                        "cctv_id" => $cctv->id,
+                        "created_at" => $timestamp,
+                        "updated_at" => $timestamp
+                    ];
+                }
 
-            //     return response()->json([
-            //         "status" => "success",
-            //         "message" => "Berhasil menambahkan akses ke seluruh cctv"
-            //     ]);
-            // }
+                if (!empty($newData)) {
+                    UserCctv::insert($newData);
+                }
+
+                return response()->json([
+                    "status" => "success",
+                    "message" => "Berhasil menambahkan akses ke seluruh cctv"
+                ]);
+            }
 
             // cek data cctv
             $existingCctv = Cctv::find($data["cctv_id"]);
@@ -259,6 +257,8 @@ class UserCctvService
             $rules = [
                 "user_id" => "required|integer",
                 "cctv_id" => "required|integer",
+                "floor_id" => "nullable|integer",
+                "all_access" => "required|string|in:Y,N",
             ];
 
             $messages = [
@@ -266,6 +266,8 @@ class UserCctvService
                 "user_id.integer" => "Data User tidak valid",
                 "cctv_id.required" => "Data Cctv harus diisi",
                 "cctv_id.integer" => "Data Cctv tidak valid",
+                "floor_id.integer" => "Data Lantai tidak valid",
+                "all_access.in" => "Pengaturan all access tidak valid",
             ];
 
             $validator = Validator::make($data, $rules, $messages);
@@ -277,15 +279,28 @@ class UserCctvService
                 ], 400);
             }
 
-            $userCctv = UserCctv::where('user_id', $data["user_id"])->where("cctv_id", $data['cctv_id'])->first();
-            if (!$userCctv) {
-                return response()->json([
-                    "status" => "error",
-                    "message" => "Data tidak ditemukan"
-                ], 404);
+            // HAPUS DATA ALL AKSES
+            if ($data["all_access"] == "Y") {
+                $userCctv = UserCctv::where('user_id', $data["user_id"]);
+
+                // JIKA ALL AKSES UNTUK LANTAI TERTENTU. HAPUS DATA BERDASARKAN LANTAI TERTENTU
+                if (isset($data['floor_id']) && $data['floor_id'] != 0) {
+                    $cctvByFloor = Cctv::where("floor_id", $data['floor_id'])->pluck("id")->toArray();
+                    $userCctv->whereIn("cctv_id", $cctvByFloor);
+                }
+                $userCctv->delete();
+            } else {
+                // HAPUS DATA SATU PER SATU
+                $userCctv = UserCctv::where('user_id', $data["user_id"])->where("cctv_id", $data['cctv_id'])->first();
+                if (!$userCctv) {
+                    return response()->json([
+                        "status" => "error",
+                        "message" => "Data tidak ditemukan"
+                    ], 404);
+                }
+                $userCctv->delete();
             }
 
-            $userCctv->delete();
             return response()->json([
                 "status" => "success",
                 "message" => "Data berhasil dihapus"

@@ -626,12 +626,19 @@
                     console.log("Sending data...!")
                 },
                 success: function(res) {
-                    let cctvList = '';
+                    let isAllAccess = true;
+                    let cctvList =
+                        `<li class="list-group-item all-cctv cctv-item" data-cctv-id="all">(FULL AKSES)</li>`;
                     $.each(res.data, function(index, r) {
+                        !existingCctvIds.includes(r.id) ? isAllAccess = false : '';
                         cctvList +=
                             `<li class="list-group-item cctv-item ${existingCctvIds.includes(r.id) ? 'selected' : ''}" data-cctv-id="${r.id}">${r.name}</li>`;
                     });
                     $('#cctv_list .list-group').html(cctvList);
+                    if (isAllAccess) {
+                        $('#cctv_items .list-group-item.all-cctv')
+                            .addClass('selected');
+                    }
                 },
                 error: function(err) {
                     console.log("error :", err);
@@ -685,11 +692,16 @@
                 event.stopPropagation(); // Jangan menutup dropdown
 
                 // Ambil ID CCTV dari data attribute
-                let cctvId = parseInt($(this).data('cctv-id'));
+                let allAccess = $(this).data('cctv-id') == "all" ? 'Y' : 'N';
+                let cctvId = allAccess == 'Y' ? 0 : parseInt($(this).data('cctv-id'));
+                let floorId = isNaN(parseInt($("#floor_id").val())) ? 0 : parseInt($("#floor_id").val());
                 let userId = parseInt($("#user_id").val());
+
                 let formData = new FormData();
                 formData.append("user_id", userId);
                 formData.append("cctv_id", cctvId);
+                formData.append("floor_id", floorId);
+                formData.append("all_access", allAccess);
 
                 // Periksa apakah item sudah dipilih
                 if ($(this).hasClass('selected')) {
@@ -703,7 +715,14 @@
                             console.log("Loading...")
                         },
                         success: function(res) {
-                            $(`li[data-cctv-id="${cctvId}"]`).removeClass('selected');
+                            if (allAccess == "Y") {
+                                $('#cctv_items .list-group-item.cctv-item.selected')
+                                    .removeClass('selected');
+                            } else {
+                                $('#cctv_items .list-group-item.all-cctv.selected')
+                                    .removeClass('selected');
+                                $(`li[data-cctv-id="${cctvId}"]`).removeClass('selected');
+                            }
                             showMessage("success", "flaticon-alarm-1", "Sukses", res.message);
                             refreshDataUserCctv();
                         },
@@ -726,7 +745,14 @@
                             console.log("Loading...")
                         },
                         success: function(res) {
-                            $(`li[data-cctv-id="${cctvId}"]`).addClass('selected');
+                            if (allAccess == "Y") {
+                                $('#cctv_items .list-group-item.cctv-item').not('.selected')
+                                    .each(function() {
+                                        $(this).addClass('selected');
+                                    });
+                            } else {
+                                $(`li[data-cctv-id="${cctvId}"]`).addClass('selected');
+                            }
                             showMessage("success", "flaticon-alarm-1", "Sukses", res.message);
                             refreshDataUserCctv();
                         },

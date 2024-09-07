@@ -57,7 +57,7 @@ class CctvService
             ->get();
 
         $output = $data->map(function ($item) {
-            $action = "";
+            $action = "#";
 
             // SUPERADMIN BISA LIHAT SEMUA DATA DAN KELOLA DATA
             // OPERATOR HANYA BISA LIHAT SEMUA DATA
@@ -73,6 +73,10 @@ class CctvService
                                     <a class='dropdown-item' onclick='return removeData(\"{$item->id}\");' href='javascript:void(0)' title='Hapus'>Hapus</a>
                                 </div>
                             </div>";
+            }
+
+            if($user->role != "superadmin"){
+                $item['url'] = "#";
             }
 
             $item['action'] = $action;

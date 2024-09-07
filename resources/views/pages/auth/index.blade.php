@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Admin cctv PIP</title>
+    <title>Kelola Akses CCTV</title>
     <!-- <link rel="stylesheet" href="css/style.css">-->
     <link rel="stylesheet" href="{{ asset('auth/css/styles.css') }}" rel="stylesheet">
     <style>
@@ -32,8 +32,8 @@
     <link href='https://fonts.googleapis.com/css?family=Work+Sans:400,300,700' rel='stylesheet' type='text/css'>
 
     <div class="container">
-        <div class="profile">
-            <button class="profile__avatar" id="toggleProfile">
+        <div class="profile profile--open">
+            <button class="profile__avatar" style="margin-top: 20px" id="toggleProfile">
                 <img style="height:170px" src="{{ asset('auth/images/logo.png') }}" alt="Avatar" />
             </button>
             <div class="profile__form">
@@ -68,11 +68,11 @@
 
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script>
-        document.getElementById('toggleProfile').addEventListener('click', function() {
-            [].map.call(document.querySelectorAll('.profile'), function(el) {
-                el.classList.toggle('profile--open');
-            });
-        });
+        // document.getElementById('toggleProfile').addEventListener('click', function() {
+        //     [].map.call(document.querySelectorAll('.profile'), function(el) {
+        //         el.classList.toggle('profile--open');
+        //     });
+        // });
 
         $("#formLogin").submit(function(e) {
             e.preventDefault();

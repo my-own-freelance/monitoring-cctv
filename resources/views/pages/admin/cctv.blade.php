@@ -220,7 +220,7 @@
                         return data;
                     }
                 }, {
-                    data: "url"
+                    data: "custom_url"
                 }],
                 pageLength: 10,
             });

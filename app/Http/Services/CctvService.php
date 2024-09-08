@@ -75,8 +75,9 @@ class CctvService
                             </div>";
             }
 
-            if($user->role != "superadmin"){
-                $item['url'] = "#";
+            $item['custom_url'] = $item["url"];
+            if ($user->role != "superadmin") {
+                $item['custom_url'] = "#";
             }
 
             $item['action'] = $action;

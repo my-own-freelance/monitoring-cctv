@@ -80,6 +80,35 @@ class CctvService
                 $item['custom_url'] = "#";
             }
 
+            $is_active = $item->is_active == 'Y' ? '
+                <div class="text-center">
+                    <span class="label-switch">Active</span>
+                </div>
+                <div class="input-row">
+                    <div class="toggle_status on">
+                        <input type="checkbox" onclick="return updateStatus(\'' . $item->id . '\', \'Maintenance\');" />
+                        <span class="slider"></span>
+                    </div>
+                </div>' :
+                '
+                <div class="text-center">
+                    <span class="label-switch">Maintenance</span>
+                </div>
+                <div class="input-row">
+                    <div class="toggle_status off">
+                        <input type="checkbox" onclick="return updateStatus(\'' . $item->id . '\', \'Active\');" />
+                        <span class="slider"></span>
+                    </div>
+                </div>';
+
+            $item['status_is_active'] = $item['is_active'];
+
+            if ($user->role == "superadmin") {
+                $item['is_active'] = $is_active;
+            } else {
+                $item["is_active"] = $item->is_active == "Y" ? "<div class='badge badge-success'>Aktif</div>" : "<div class='badge badge-warning'>Maintenance</div>";
+            }
+
             $item['action'] = $action;
             $floor = $item['floor'];
             $building = $item['building'];
@@ -132,6 +161,7 @@ class CctvService
                 "url" => "required|string",
                 "building_id" => "required|integer",
                 "floor_id" => "required|integer",
+                "is_active" => "required|string|in:Y,N",
             ];
 
             $messages = [
@@ -141,6 +171,8 @@ class CctvService
                 "building_id.integer" => "Data Gedung tidak valid",
                 "floor_id.required" => "Data Lantai harus diisi",
                 "floor_id.integer" => "Data Lantai tidak valid",
+                "is_active" => "Status harus diisi",
+                "is_active.in" => "Status tidak sesuai",
             ];
 
             $validator = Validator::make($data, $rules, $messages);
@@ -193,6 +225,7 @@ class CctvService
                 "name" => "required|string",
                 "building_id" => "required|integer",
                 "floor_id" => "required|integer",
+                "is_active" => "required|string|in:Y,N",
             ];
 
             $messages = [
@@ -203,6 +236,8 @@ class CctvService
                 "building_id.integer" => "Data Gedung tidak valid",
                 "floor_id.required" => "Data Lantai harus diisi",
                 "floor_id.integer" => "Data Lantai tidak valid",
+                "is_active" => "Status harus diisi",
+                "is_active.in" => "Status tidak sesuai",
             ];
 
             $validator = Validator::make($data, $rules, $messages);
@@ -321,6 +356,50 @@ class CctvService
             return response()->json([
                 "status" => "error",
                 "message" => $err->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateStatus($request)
+    {
+        try {
+            $data = $request->all();
+            $rules = [
+                "id" => "required|integer",
+                "is_active" => "required|in:N,Y",
+            ];
+
+            $messages = [
+                "id.required" => "Data ID harus diisi",
+                "id.integer" => "Type ID tidak sesuai",
+                "is_active.required" => "Status harus diisi",
+                "is_active.in" => "Status tidak sesuai",
+            ];
+
+            $validator = Validator::make($data, $rules, $messages);
+            if ($validator->fails()) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => $validator->errors()->first(),
+                ], 400);
+            }
+
+            $cctv = Cctv::find($data['id']);
+            if (!$cctv) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "Data cctv tidak ditemukan"
+                ], 404);
+            }
+            $cctv->update($data);
+            return response()->json([
+                "status" => "success",
+                "message" => "Status berhasil diperbarui"
+            ]);
+        } catch (\Exception $err) {
+            return response()->json([
+                "status" => "error",
+                "message" => $err->getMessage(),
             ], 500);
         }
     }

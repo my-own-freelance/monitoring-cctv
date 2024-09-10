@@ -10,7 +10,7 @@ class Cctv extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ["name", "url", "building_id", "floor_id"];
+    protected $fillable = ["name", "url", "building_id", "floor_id", "is_active"];
 
     public function building()
     {

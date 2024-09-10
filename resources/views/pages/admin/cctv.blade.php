@@ -1,6 +1,8 @@
 @extends('layouts.dashboard')
 @section('title', $title)
-
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('dashboard/css/toggle-status.css') }}">
+@endpush
 @section('content')
     <div class="row mb-5">
         <div class="col-md-12" id="boxTable">
@@ -63,6 +65,7 @@
                                     <th class="all">Nama CCTV</th>
                                     <th class="all">Area Gedung</th>
                                     <th class="all">Area Lantai</th>
+                                    <th class="all">Status</th>
                                     <th class="all">Url Cctv</th>
                                 </tr>
                             </thead>
@@ -115,6 +118,14 @@
                             <select class="form-control form-control" id="floor_id" name="floor_id">
                                 <option value = "">Pilih Lantai</option>
                                 {{-- request by api based on building area --}}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="is_active">Status</label>
+                            <select class="form-control form-control" id="is_active" name="is_active" required>
+                                <option value = "">Pilih Status</option>
+                                <option value="Y">Aktif</option>
+                                <option value="N">Maintenance</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -220,6 +231,8 @@
                         return data;
                     }
                 }, {
+                    data: "is_active"
+                }, {
                     data: "custom_url"
                 }],
                 pageLength: 10,
@@ -278,6 +291,7 @@
                         $("#name").val(d.name);
                         $("#url").val(d.url);
                         $("#building_id").val(d.building_id).change();
+                        $("#is_active").val(d.is_active);
 
                         // ambil data lantai gedung
                         getFloorList(d.building_id, d.floor_id)
@@ -299,6 +313,7 @@
             formData.append("url", $("#url").val());
             formData.append("building_id", parseInt($("#building_id").val()));
             formData.append("floor_id", parseInt($("#floor_id").val()));
+            formData.append("is_active", $("#is_active").val());
 
             saveData(formData, $("#formEditable").attr("data-action"));
             return false;
@@ -444,6 +459,38 @@
             }
 
             window.location.href = "/admin/cctv/export-csv?" + $.param(dataFilter)
+        }
+
+        function updateStatus(id, status) {
+            let c = confirm(`Anda yakin ingin mengubah status ke ${status} ?`)
+            if (c) {
+                let dataToSend = new FormData();
+                dataToSend.append("is_active", status == "Maintenance" ? "N" : "Y");
+                dataToSend.append("id", id);
+                updateStatusData(dataToSend);
+            }
+        }
+
+        function updateStatusData(data) {
+            $.ajax({
+                url: "/api/admin/cctv/update-status",
+                contentType: false,
+                processData: false,
+                method: "POST",
+                data: data,
+                beforeSend: function() {
+                    console.log("Loading...")
+                },
+                success: function(res) {
+                    showMessage("success", "flaticon-alarm-1", "Sukses", res.message);
+                    refreshData();
+                },
+                error: function(err) {
+                    console.log("error :", err);
+                    showMessage("danger", "flaticon-error", "Peringatan", err.message || err.responseJSON
+                        ?.message);
+                }
+            })
         }
     </script>
 @endpush

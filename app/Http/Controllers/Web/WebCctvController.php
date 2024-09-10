@@ -66,6 +66,10 @@ class WebCctvController extends Controller
         return $this->cctvService->list($request);
     }
 
+    public function updateStatus(Request $request)
+    {
+        return $this->cctvService->updateStatus($request);
+    }
 
     public function exportCsv(Request $request)
     {

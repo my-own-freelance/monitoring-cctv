@@ -15,6 +15,7 @@ return new class extends Migration
             $table->bigIncrements("id");
             $table->string('name');
             $table->string("url");
+            $table->enum('is_active', ['Y', 'N'])->default('Y');
             $table->unsignedBigInteger("building_id");
             $table->unsignedBigInteger("floor_id");
             $table->foreign("building_id")

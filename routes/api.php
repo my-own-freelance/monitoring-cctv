@@ -167,6 +167,7 @@ Route::prefix("admin")->namespace("admin")->middleware(["check.auth"])->group(fu
         Route::middleware("check.role:superadmin")->group(function () {
             Route::post("/create", [WebCctvController::class, "create"]);
             Route::post("/update", [WebCctvController::class, "update"]);
+            Route::post("/update-status", [WebCctvController::class, "updateStatus"]);
             Route::delete("/delete", [WebCctvController::class, "destroy"]);
         });
 

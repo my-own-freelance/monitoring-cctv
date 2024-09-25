@@ -12,8 +12,10 @@ class UserService
     public function dataTable($request)
     {
         $query = User::select("id", "name", "username", "email", "role", "is_active", "device_token")
-            ->whereNull('is_master')
-            ->orWhere('is_master', false);
+            ->where(function ($query) {
+                $query->whereNull('is_master')
+                    ->orWhere('is_master', false);
+            });
 
         if ($request->query("search")) {
             $searchValue = $request->query("search")['value'];

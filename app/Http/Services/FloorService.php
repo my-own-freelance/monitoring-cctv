@@ -264,7 +264,7 @@ class FloorService
                 $building_id = $request->query("building_id");
                 $query->where('building_id', $building_id);
             } else {
-                $query->limit(100);
+                // $query->limit(100);
             }
 
             $data = $query->orderBy("name", "asc")->get();

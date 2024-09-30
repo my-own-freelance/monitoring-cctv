@@ -550,7 +550,7 @@
                     "<option value ='all' selected>(FULL AKSES)</option > ");
                 let userId = $("#user_id").val();
                 getExistingCctvIds(userId).then(function(existingCctvIds) {
-                    getCctvList(null, existingCctvIds);
+                    getCctvList("all", existingCctvIds);
                 });
             } else {
                 getFloorList(building_id);
@@ -588,7 +588,7 @@
         }
 
         $("#floor_id").change(function() {
-            let floor_id = $(this).val();
+            let floor_id = $(this).val() || 0;
             let userId = $("#user_id").val();
             getExistingCctvIds(userId).then(function(existingCctvIds) {
                 getCctvList(floor_id, existingCctvIds);
@@ -627,8 +627,9 @@
                 },
                 success: function(res) {
                     let isAllAccess = true;
-                    let cctvList =
-                        `<li class="list-group-item all-cctv cctv-item" data-cctv-id="all">(FULL AKSES)</li>`;
+                    // jika lantai nya access all atau ada salah satu lantai yg dipilih, tambahkan opsi full akses untuk cctv
+                    let cctvList = floor_id || floor_id == "all" ?
+                        `<li class="list-group-item all-cctv cctv-item" data-cctv-id="all">(FULL AKSES)</li>` : '';
                     $.each(res.data, function(index, r) {
                         !existingCctvIds.includes(r.id) ? isAllAccess = false : '';
                         cctvList +=

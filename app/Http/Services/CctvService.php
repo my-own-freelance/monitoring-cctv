@@ -119,7 +119,13 @@ class CctvService
             return $item;
         });
 
-        $total = Cctv::count();
+        $total = 0;
+        if ($user->role == "operator_cctv") {
+            $userCctv = UserCctv::where('user_id', $user->id)->pluck("cctv_id");
+            $total = Cctv::whereIn("id", $userCctv)->count();
+        }else{
+            $total = Cctv::count();
+        }
         return response()->json([
             'draw' => $request->query('draw'),
             'recordsFiltered' => $recordsFiltered,
@@ -350,7 +356,8 @@ class CctvService
             $data = $query->orderBy("name", "asc")->get();
             return response()->json([
                 "status" => "success",
-                "data" => $data
+                "data" => $data,
+                "request" => $request->query()
             ]);
         } catch (\Exception $err) {
             return response()->json([

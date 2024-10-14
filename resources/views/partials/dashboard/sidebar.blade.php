@@ -19,7 +19,7 @@
                     </span>
                     <h4 class="text-section">Master</h4>
                 </li>
-                @if ($user->role != 'operator_cctv')
+                {{-- @if ($user->role != 'operator_cctv') --}}
                     <li class="nav-item ml-3 {{ $routename == 'building' ? 'active' : '' }}">
                         <a href="{{ route('building') }}">
                             <i class="fas fa-building"></i>
@@ -32,7 +32,7 @@
                             <p>Lantai</p>
                         </a>
                     </li>
-                @endif
+                {{-- @endif --}}
                 <li class="nav-item ml-3 {{ $routename == 'cctv' ? 'active' : '' }}">
                     <a href="{{ route('cctv') }}">
                         <i class="fas fa-video"></i>

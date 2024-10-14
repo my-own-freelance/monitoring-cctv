@@ -3,6 +3,8 @@
 namespace App\Http\Services;
 
 use App\Models\Building;
+use App\Models\Cctv;
+use App\Models\UserCctv;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -10,6 +12,7 @@ class BuildingService
 {
     public function dataTable($request)
     {
+        $building_id = []; // only use when user access is OPERATOR CCTV
         $query = Building::query();
 
         if ($request->query("search")) {
@@ -22,12 +25,9 @@ class BuildingService
         // OPERATOR CCTV TIDAK BISA MELIHAT DATA
         $user = auth()->user();
         if ($user->role == "operator_cctv") {
-            return response()->json([
-                'draw' => $request->query('draw'),
-                'recordsFiltered' => 0,
-                'recordsTotal' => 0,
-                'data' => [],
-            ]);
+            $cctv_id = UserCctv::where('user_id', $user->id)->pluck("cctv_id");
+            $building_id = Cctv::whereIn('id', $cctv_id)->distinct()->pluck('building_id');
+            $query->whereIn("id", $building_id);
         }
 
         $recordsFiltered = $query->count();
@@ -69,7 +69,13 @@ class BuildingService
             return $item;
         });
 
-        $total = Building::count();
+        $total = 0;
+        if ($user->role == "operator_cctv") {
+            $total = Building::whereIn("id", $building_id)->count();
+        } else {
+            $total = Building::count();
+        }
+
         return response()->json([
             'draw' => $request->query('draw'),
             'recordsFiltered' => $recordsFiltered,

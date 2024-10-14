@@ -12,6 +12,8 @@ class CctvService
 {
     public function dataTable($request)
     {
+        $cctv_id = []; // only use when user access is OPERATOR CCTV
+
         $query = Cctv::with(["floor" => function ($query) {
             $query->select("id", "name");
         }])->with(["building" => function ($query) {
@@ -45,8 +47,8 @@ class CctvService
         // OPERATOR CCTV BISA LIHAT DATA SESUI CCTV DIA
         $user = auth()->user();
         if ($user->role == "operator_cctv") {
-            $userCctv = UserCctv::where('user_id', $user->id)->pluck("cctv_id");
-            $query->whereIn("id", $userCctv);
+            $cctv_id = UserCctv::where('user_id', $user->id)->pluck("cctv_id");
+            $query->whereIn("id", $cctv_id);
         }
 
         $recordsFiltered = $query->count();
@@ -121,8 +123,7 @@ class CctvService
 
         $total = 0;
         if ($user->role == "operator_cctv") {
-            $userCctv = UserCctv::where('user_id', $user->id)->pluck("cctv_id");
-            $total = Cctv::whereIn("id", $userCctv)->count();
+            $total = Cctv::whereIn("id", $cctv_id)->count();
         }else{
             $total = Cctv::count();
         }

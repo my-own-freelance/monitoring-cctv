@@ -25,8 +25,11 @@ class DashboardController extends Controller
         $buildingName = "NOT ASSIGN";
 
         if ($user->role == "operator_cctv") {
-            $buildings = 0;
-            $floors = 0;
+            $cctv_id = UserCctv::where('user_id', $user->id)->pluck("cctv_id");
+            $floor_id = Cctv::whereIn('id', $cctv_id)->distinct()->pluck('floor_id');
+            $building_id = Cctv::whereIn('id', $cctv_id)->distinct()->pluck('building_id');
+            $floors = Floor::whereIn("id", $floor_id)->count();
+            $buildings = Building::whereIn("id", $building_id)->count();
             $cctvs = UserCctv::where("user_id", $user->id)->count();
         }
 

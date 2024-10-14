@@ -2,7 +2,7 @@
 @section('title', $title)
 @section('content')
     <div class="row">
-        @if ($user->role != 'operator_cctv')
+        {{-- @if ($user->role != 'operator_cctv') --}}
             <div class="col-6 col-sm-6 col-md-3">
                 <div class="card card-stats card-round">
                     <div class="card-body">
@@ -45,7 +45,7 @@
                     </div>
                 </div>
             </div>
-        @endif
+        {{-- @endif --}}
         <div class="col-6 col-sm-6 col-md-3">
             <div class="card card-stats card-round">
                 <div class="card-body ">

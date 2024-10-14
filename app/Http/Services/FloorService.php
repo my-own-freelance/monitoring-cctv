@@ -5,12 +5,14 @@ namespace App\Http\Services;
 use App\Models\Building;
 use App\Models\Cctv;
 use App\Models\Floor;
+use App\Models\UserCctv;
 use Illuminate\Support\Facades\Validator;
 
 class FloorService
 {
     public function dataTable($request)
     {
+        $floor_id = []; // only use when user access is OPERATOR CCTV
         $query = Floor::with(["building" => function ($query) {
             $query->select("id", "name");
         }]);
@@ -33,12 +35,9 @@ class FloorService
         // OPERATOR CCTV TIDAK BISA LIHAT DATA
         $user = auth()->user();
         if ($user->role == "operator_cctv") {
-            return response()->json([
-                'draw' => $request->query('draw'),
-                'recordsFiltered' => 0,
-                'recordsTotal' => 0,
-                'data' => [],
-            ]);
+            $cctv_id = UserCctv::where('user_id', $user->id)->pluck("cctv_id");
+            $floor_id = Cctv::whereIn('id', $cctv_id)->distinct()->pluck('floor_id');
+            $query->whereIn("id", $floor_id);
         }
 
         $recordsFiltered = $query->count();
@@ -74,7 +73,13 @@ class FloorService
             return $item;
         });
 
-        $total = Floor::count();
+        $total = 0;
+        if ($user->role == "operator_cctv") {
+            $total = Floor::whereIn("id", $floor_id)->count();
+        } else {
+            $total = Floor::count();
+        }
+
         return response()->json([
             'draw' => $request->query('draw'),
             'recordsFiltered' => $recordsFiltered,
